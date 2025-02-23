@@ -15,8 +15,8 @@ public class Beneficiario {
     @Column(name = "beneficiario",nullable = false, length = 450)
     private String beneficiario;
 
-    @Column(columnDefinition = "BLOB")
-    private byte[] descrizione;
+    @Column(columnDefinition = "TEXT")
+    private String descrizione;
 
     @Column(name = "email",nullable = true, length = 450)
     private String email;
@@ -91,11 +91,11 @@ public class Beneficiario {
         this.scadenze = scadenze;
     }
 
-    public byte[] getDescrizione() {
+    public String getDescrizione() {
         return descrizione;
     }
 
-    public void setDescrizione(byte[] descrizione) {
+    public void setDescrizione(String descrizione) {
         this.descrizione = descrizione;
     }
 }

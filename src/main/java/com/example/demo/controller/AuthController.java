@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
+
 @Controller
 public class AuthController {
     @Autowired
@@ -76,6 +78,12 @@ public class AuthController {
             @RequestParam("g-recaptcha-response") String captchaResponse,
             Model model) {
             this.valorizzaCampi(model, username, fullname, email, password, role);
+            //Control Role ADMIN
+            Ruolo ruolo = roleRepository.findByName("ADMIN".toUpperCase(Locale.ROOT));
+            if (ruolo.getName().equals("ADMIN".toUpperCase()) && role.equals("ADMIN".toUpperCase())) {
+                model.addAttribute("errore", "Ruolo ADMIN già inserito");
+                return "security/register";
+            }
             if (fullname.isEmpty()) {
                 model.addAttribute("errore", "Valorizzare il fullname");
                 return "security/register";
@@ -108,8 +116,8 @@ public class AuthController {
             user.setPassword(password);
             user.setUsername(username);
             user.setEnabled(true);
-            Ruolo ruolo = roleRepository.findByName(role);
-            user.setRoles(java.util.List.of(ruolo));
+            Ruolo ruolo1 = roleRepository.findByName(role);
+            user.setRoles(java.util.List.of(ruolo1));
             // Qui invochiamo il servizio che crea l'utente e assegna il ruolo
             try {
                 userService.registerNewUser(user);
