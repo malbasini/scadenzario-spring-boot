@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Locale;
 
 @Controller
@@ -79,10 +80,15 @@ public class AuthController {
             Model model) {
             this.valorizzaCampi(model, username, fullname, email, password, role);
             //Control Role ADMIN
-            Ruolo ruolo = roleRepository.findByName("ADMIN".toUpperCase(Locale.ROOT));
-            if (ruolo.getName().equals("ADMIN".toUpperCase()) && role.equals("ADMIN".toUpperCase())) {
-                model.addAttribute("errore", "Ruolo ADMIN già inserito");
-                return "security/register";
+            try {
+                Register user = userService.loadRegisterByUsername(username);
+                if(user.getRoles().stream().anyMatch(role1 -> role1.getName().equals("ADMIN"))) {
+                    if(role.equals("ADMIN".toUpperCase(Locale.ROOT))) {
+                        model.addAttribute("errore", "Ruolo ADMIN già inserito");
+                        return "security/register";
+                    }
+                }
+            }catch (Exception e) {
             }
             if (fullname.isEmpty()) {
                 model.addAttribute("errore", "Valorizzare il fullname");
@@ -110,17 +116,17 @@ public class AuthController {
                 this.valorizzaCampi(model, username, fullname, email, password, role);
                 return "security/register";// Torna alla pagina del form
             }
-            Register user = new Register();
-            user.setFullname(fullname);
-            user.setEmail(email);
-            user.setPassword(password);
-            user.setUsername(username);
-            user.setEnabled(true);
+            Register user1 = new Register();
+            user1.setFullname(fullname);
+            user1.setEmail(email);
+            user1.setPassword(password);
+            user1.setUsername(username);
+            user1.setEnabled(true);
             Ruolo ruolo1 = roleRepository.findByName(role);
-            user.setRoles(java.util.List.of(ruolo1));
+            user1.setRoles(java.util.List.of(ruolo1));
             // Qui invochiamo il servizio che crea l'utente e assegna il ruolo
             try {
-                userService.registerNewUser(user);
+                userService.registerNewUser(user1);
                 model.addAttribute("message", "Registrazione effettuata con successo. Ora fai il login!");
                 return "security/register";
             } catch (Exception e) {
