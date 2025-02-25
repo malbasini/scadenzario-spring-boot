@@ -6,19 +6,14 @@ import com.example.demo.model.Register;
 import com.example.demo.service.BeneficiarioService;
 import com.example.demo.service.CaptchaValidator;
 import com.example.demo.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.security.Principal;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 @Controller
@@ -42,26 +37,28 @@ public class BeneficiarioController {
             @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(name = "message", required = false) String message,
             Principal principal,
             Model model) {
 
         String loggedUsername = principal.getName();
         Register user = userService.loadRegisterByUsername(loggedUsername);
-        // Ottenere i corsi con paginazione, ricerca e ordinamento
+        // Ottenere i beneficiari con paginazione, ricerca e ordinamento
         Page<Beneficiario> beneficiari = beneficiarioService.findBeneficiari(page, size, beneficiario, sortBy, sortDirection);
 
-        // Passare i dati al modello per JSP
+
         model.addAttribute("beneficiari", beneficiari.getContent().stream()
                 .filter(b -> b.getUser().getId().equals(user.getId()))
                 .collect(Collectors.toList()));
-        // Lista dei corsi
+
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", beneficiari.getTotalPages());
         model.addAttribute("titleFilter", beneficiario);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDirection", sortDirection);
+        model.addAttribute("message", message);
 
-        return "/beneficiari/list"; // Nome della vista JSP
+        return "/beneficiari/list";
     }
     @GetMapping("/beneficiario/new")
     public String showCreateForm(Model model) {
@@ -120,6 +117,35 @@ public class BeneficiarioController {
     private void valorizzaInput(Model model, String denominazione, String description) {
         model.addAttribute("denominazione", denominazione);
         model.addAttribute("description", description);
+    }
+
+
+    @GetMapping(value = "/{id}/detail")
+    public String beneficiariDetail(@PathVariable Integer id,
+                               @RequestParam(name = "message", required = false) String message,
+                               @RequestParam(name = "message1", required = false) String message1,
+                               Model model,
+                               Principal principal) {
+        Beneficiario beneficiario = beneficiarioService.findById(id);
+        if (beneficiario == null) {
+            return "security/access-denied";// Gestione caso corso non trovato
+        }
+        boolean isAdmin = false;
+        // L'utente loggato
+        String loggedUsername = principal.getName();
+        Register user = userService.loadRegisterByUsername(loggedUsername);
+        if(user.getRoles().stream().anyMatch(role -> role.getName().equals("ADMIN"))) {
+            beneficiario.setUser(user);// es: "mariorossi"
+            isAdmin = true;
+        }
+        // Verifico se il proprietario  è lo stesso che ha fatto login
+        boolean isOwner = (beneficiario.getUser().getUsername().equals(loggedUsername));
+        model.addAttribute("isOwner", isOwner);
+        model.addAttribute("beneficiario", beneficiario);
+        model.addAttribute("message", message);
+        model.addAttribute("message1", message1);
+        return "beneficiari/detail";
+
     }
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable("id") Integer id,
@@ -182,7 +208,7 @@ public class BeneficiarioController {
             model.addAttribute("message", e.getMessage());
             return "redirect:/" + beneficiario.getId() + "/edit";
         }
-        return "redirect:/" + beneficiario.getId() + "/edit?message1=Beneficiario aggiornato con successo!";
+        return "redirect:/beneficiari/list?message=Beneficiario aggiornato con successo!";
     }
 
     private String validazioni(Beneficiario update, Model model) {
