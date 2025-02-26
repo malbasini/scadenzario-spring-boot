@@ -5,15 +5,19 @@ import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Register;
 import com.example.demo.service.BeneficiarioService;
 import com.example.demo.service.CaptchaValidator;
+import com.example.demo.service.HtmlSanitizerService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.owasp.html.PolicyFactory;
+import org.springframework.web.util.HtmlUtils;
 
 import java.security.Principal;
-import java.time.Duration;
 import java.util.stream.Collectors;
 
 @Controller
@@ -27,6 +31,9 @@ public class BeneficiarioController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private HtmlSanitizerService sanitizerService;
 
 
     // GET /courses -> listing di tutti i corsi con supporto a paginazione, ricerca e ordinamento
@@ -58,13 +65,13 @@ public class BeneficiarioController {
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
 
-        return "/beneficiari/list";
+        return "beneficiari/list";
     }
     @GetMapping("/beneficiario/new")
     public String showCreateForm(Model model) {
         Beneficiario beneficiario = new Beneficiario();
         model.addAttribute("beneficiario", beneficiario);
-        return "/beneficiari/create";
+        return "beneficiari/create";
     }
     @PostMapping("/beneficiario/create")
     public String create(@RequestParam("g-recaptcha-response") String captchaResponse,
@@ -72,25 +79,27 @@ public class BeneficiarioController {
                          @RequestParam String description,
                          Principal principal,
                          Model model) {
+        denominazione = sanitizerService.sanitize(denominazione);
+        description = sanitizerService.sanitize(description);
         String username = principal.getName();  // lo username loggato
         Register user = userService.loadRegisterByUsername(username);
-        if(!verificaDenominazione(denominazione,user,model)) {
+        if(!verificaDenominazione(denominazione,description,user,model)) {
             this.valorizzaInput(model,denominazione,description);
-            return "/beneficiari/create";
+            return "beneficiari/create";
         }
         this.valorizzaInput(model,denominazione,description);
         boolean isCaptchaValid = captchaValidator.verifyCaptcha(captchaResponse);
         if (!isCaptchaValid) {
             model.addAttribute("message", "Captcha non valido. Riprova.");
-            return "/beneficiari/create";// Torna alla pagina del form
+            return "beneficiari/create";// Torna alla pagina del form
         }
         if(denominazione==null || denominazione.isEmpty()){
             model.addAttribute("message", "Il beneficiario è obbligatorio");
-            return "/beneficiari/create";
+            return "beneficiari/create";
         }
         if(description==null || description.isEmpty()){
             model.addAttribute("message", "La descrizione è obbligatoria");
-            return "/beneficiari/create";
+            return "beneficiari/create";
         }
         Beneficiario beneficiario = new Beneficiario();
         beneficiario.setBeneficiario(denominazione);
@@ -101,14 +110,15 @@ public class BeneficiarioController {
             b = beneficiarioService.save(beneficiario);
         } catch (Exception e) {
             model.addAttribute("message", "Errore nella creazione del beneficiario: " + e.getMessage());
-            return "/beneficiari/create";
+            return "beneficiari/create";
         }
         return "redirect:/" + b.getId() + "/edit" + "?message1= Inserimento effettuato correttamente. Ora inserisci gli altri dati!";
     }
 
-    private boolean verificaDenominazione(String denominazione, Register user, Model model) {
+    private boolean verificaDenominazione(String denominazione, String description, Register user, Model model) {
         Beneficiario beneficiario = beneficiarioService.existsByBeneficiarioAndIdUser(denominazione,user);
         if(beneficiario != null) {
+            this.valorizzaInput(model,denominazione, description);
             model.addAttribute("message", "Beneficiario già inserito!");
             return false;
         }
@@ -176,15 +186,26 @@ public class BeneficiarioController {
             model.addAttribute("iduser",beneficiario.getUser().getId());
             model.addAttribute("message", message);
             model.addAttribute("message1", message1);
-            return "/beneficiari/edit";
+            return "beneficiari/edit";
         }
     }
     // POST /courses/{id} -> aggiorna un corso esistente
-    @PostMapping("/{idBeneficiario}/update")
+    @GetMapping(path = "/{idBeneficiario}/update")
     public String updateBeneficiario(@PathVariable("idBeneficiario") Integer idBeneficiario,
-                                     @ModelAttribute("beneficiarioForm") Beneficiario beneficiario,
+                                     @RequestParam("denominazione") String denominazione,
+                                     @RequestParam("descrizione") String descrizione,
+                                     @RequestParam("email") String email,
+                                     @RequestParam("telefono") String telefono,
+                                     @RequestParam("sitoWeb") String sitoWeb,
                                      Model model,
                                      Principal principal) {
+        //SANITIZZAZIONE
+        Beneficiario beneficiario = new Beneficiario();
+        beneficiario.setBeneficiario(denominazione);
+        beneficiario.setEmail(sanitizerService.sanitize(email));
+        beneficiario.setTelefono(sanitizerService.sanitize(telefono));
+        beneficiario.setSitoWeb(sanitizerService.sanitize(sitoWeb));
+        beneficiario.setDescrizione(sanitizerService.sanitize(descrizione));
         // L'utente loggato
         String loggedUsername = principal.getName(); // es: "mariorossi"
         Register user = userService.loadRegisterByUsername(loggedUsername);
@@ -221,6 +242,14 @@ public class BeneficiarioController {
             message = "Valorizzare la descrizione";
             return message;
         }
+        if(update.getEmail() == null || update.getEmail().isEmpty()) {
+            message = "Valorizzare l'email";
+            return message;
+        }
+        if(update.getTelefono() == null || update.getTelefono().isEmpty()) {
+            message = "Valorizzare il telefono";
+            return message;
+        }
         return message;
     }
 
@@ -234,10 +263,10 @@ public class BeneficiarioController {
         Register user = userService.loadRegisterByUsername(loggedUsername);
         if (!isOwner) {
             // se non sei il proprietario, redirect o errore
-            return "redirect:security/access-denied";
+            return "security/access-denied";
         }
         beneficiarioService.deleteById(id);
-        return "redirect:/beneficiari/list?message1=Course deleted successfully";
+        return "redirect:/beneficiari/list?message=Beneficiario eliminato con successo!";
     }
 
 

@@ -66,11 +66,18 @@
             </div>
             <div class="input-group">
               <label>Email</label>:&nbsp
-              <b><th:block th:text="${beneficiario.getEmail()}"></th:block></b>
+              <b><th:block th:if="${!#strings.isEmpty(beneficiario.getEmail())}"
+                           th:text="${T(org.jsoup.Jsoup).parse(beneficiario.getEmail()).text()}" >
+              </th:block>
+              </b>
             </div>
             <div class="input-group">
               <label>Telefono</label>:&nbsp
-              <b><th:block th:text="${beneficiario.getTelefono()}"></th:block></b>
+              <b>
+                <th:block th:if="${!#strings.isEmpty(beneficiario.getTelefono())}"
+                           th:text="${T(org.jsoup.Jsoup).parse(beneficiario.getTelefono()).text()}" >
+              </th:block>
+              </b>
             </div>
             <div class="input-group">
               <label>Sito web</label>:&nbsp

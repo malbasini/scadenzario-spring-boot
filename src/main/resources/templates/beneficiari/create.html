@@ -22,11 +22,11 @@
 <form method="post"  th:action="|@{/beneficiario/create}|">
     <div class="row">
         <div class="form-floating mb-3 col-md-6">
-            <input type="text" name="denominazione" class="form-control" id="floatingInput" placeholder="Denominazione">
+            <input type="text" name="denominazione" class="form-control" id="floatingInput" placeholder="Denominazione" required="required" minlength="5" maxlength="50">
             <label for="floatingInput">Beneficiario</label>
         </div>
         <div class="form-floating col-md-6">
-            <input type="text" name="description" class="form-control" id="floatingPassword" placeholder="Descrizione">
+            <input type="text" name="description" class="form-control" id="floatingPassword" placeholder="Descrizione" required="required" minlength="5" maxlength="50">
             <label for="floatingPassword">Descrizione</label>
         </div>
     </div>
