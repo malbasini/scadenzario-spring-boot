@@ -1,0 +1,288 @@
+package com.example.demo.controller;
+
+import com.example.demo.model.Beneficiario;
+import com.example.demo.model.Register;
+import com.example.demo.model.Ricevuta;
+import com.example.demo.model.Scadenza;
+import com.example.demo.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.security.Principal;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Controller
+@RequestMapping()
+public class ScadenzaController {
+    @Autowired
+    private CaptchaValidator captchaValidator;
+
+    @Autowired
+    private ScadenzaService scadenzaService;
+
+    @Autowired
+    private RicevutaService ricevutaService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private HtmlSanitizerService sanitizerService;
+
+    @GetMapping("/scadenze/list")
+    public String listScadenze(
+            @RequestParam(defaultValue = "0") int page, // Pagina corrente
+            @RequestParam(defaultValue = "1") int size, // Elementi per pagina
+            @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
+            @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(name = "message", required = false) String message,
+            Principal principal,
+            Model model) {
+
+        String loggedUsername = principal.getName();
+        Register user = userService.loadRegisterByUsername(loggedUsername);
+        // Ottenere i beneficiari con paginazione, ricerca e ordinamento
+        Page<Scadenza> scadenze = scadenzaService.findScadenze(page, size, beneficiario, sortBy, sortDirection);
+
+        scadenze.getContent().forEach(scadenza -> {
+            String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            model.addAttribute("formattedDataScadenza", formattedDate);
+
+        });
+        scadenze.getContent().forEach(scadenza -> {
+            if(scadenza.getDataPagamento()!=null) {
+                String formattedDate = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                model.addAttribute("formattedDataPagamento", formattedDate);
+            }
+        });
+        scadenze.getContent().forEach(scadenza -> {
+            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+            String formattedImporto = currencyFormatter.format(scadenza.getImporto());
+            model.addAttribute("formattedImporto", formattedImporto);
+
+        });
+        scadenze.getContent().forEach(scadenza -> {
+            scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
+        });
+        model.addAttribute("scadenze", scadenze.getContent().stream()
+                .filter(b -> b.getBeneficiario().getUser().getId().equals(user.getId()))
+                .collect(Collectors.toList()));
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", scadenze.getTotalPages());
+        model.addAttribute("titleFilter", beneficiario);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("beneficiario", beneficiario);
+        model.addAttribute("sortDirection", sortDirection);
+        model.addAttribute("message", message);
+
+        return "scadenze/list";
+    }
+    @GetMapping("/scadenza/new")
+    public String showCreateForm(Model model,
+                                Principal principal) {
+        Scadenza scadenza = new Scadenza();
+        String username = principal.getName();  // lo username loggato
+        Register user = userService.loadRegisterByUsername(username);
+        List<Beneficiario> beneficiari = scadenzaService.findBeneficiariByIdUser(user.getId());
+        model.addAttribute("scadenza", scadenza);
+        model.addAttribute("beneficiari", beneficiari);
+        return "scadenze/create";
+    }
+    @PostMapping("/scadenza/create")
+    public String create(@RequestParam("g-recaptcha-response") String captchaResponse,
+                         @RequestParam("denominazione") String denominazione,
+                         @RequestParam("importo") BigDecimal importo,
+                         @RequestParam("dataScadenza") LocalDate dataScadenza,
+                         Principal principal,
+                         Model model) {
+        denominazione = sanitizerService.sanitize(denominazione);
+        String username = principal.getName();  // lo username loggato
+        Register user = userService.loadRegisterByUsername(username);
+        boolean isCaptchaValid = captchaValidator.verifyCaptcha(captchaResponse);
+        if (!isCaptchaValid) {
+            model.addAttribute("message", "Captcha non valido. Riprova.");
+            return "scadenze/create";// Torna alla pagina del form
+        }
+        if(denominazione==null || denominazione.isEmpty()){
+            model.addAttribute("message", "Il beneficiario è obbligatorio");
+            return "scadenze/create";
+        }
+        if(dataScadenza==null){
+            model.addAttribute("message", "La data scadenza è obbligatoria");
+            return "scadenze/create";
+        }
+        if(importo==null){
+            model.addAttribute("message", "L'importo è obbligatorio");
+            return "scadenze/create";
+        }
+        Scadenza scadenza = new Scadenza();
+        Beneficiario b = scadenzaService.findByBeneficiarioAndIdUser(denominazione, user);
+        scadenza.setBeneficiario(b);
+        scadenza.setDataScadenza(dataScadenza);
+        scadenza.setImporto(importo);
+        Scadenza s;
+        try {
+            s = scadenzaService.save(scadenza);
+        } catch (Exception e) {
+            model.addAttribute("message", "Errore nella creazione del beneficiario: " + e.getMessage());
+            return "scadenze/create";
+        }
+        return "redirect:/" + s.getId() + "/editscadenza" + "?message1= Inserimento effettuato correttamente. Ora inserisci gli altri dati!";
+    }
+
+
+    @GetMapping("/{id}/editscadenza")
+    public String editScadenza(@PathVariable("id") Integer id,
+                       @RequestParam(name = "message", required = false) String message,
+                       @RequestParam(name = "message1", required = false) String message1,
+                       Model model,
+                       Principal principal) {
+        Scadenza scadenza = scadenzaService.findById(id);
+        if (scadenza == null) {
+            // gestisci errore se non trovato
+            return "security/access-denied";
+        }
+        List<Ricevuta> ricevute = ricevutaService.findRicevuteByIdScadenza(id);
+        scadenza.setRicevute(ricevute);
+        if(scadenza.getBeneficiario().getUser() == null) {
+            return "security/access-denied";
+        }
+        else
+        {
+            String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            model.addAttribute("formattedDataScadenza", formattedDate);
+            String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            model.addAttribute("formattedDataPagmento", formattedDatePagamento);
+            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+            String formattedImporto = currencyFormatter.format(scadenza.getImporto());
+            model.addAttribute("formattedImporto", formattedImporto);
+            scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
+            // L'utente loggato
+            String loggedUsername = principal.getName();
+            boolean isOwner = scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername);
+            model.addAttribute("isOwner", isOwner);
+            model.addAttribute("scadenzaForm", scadenza);
+            model.addAttribute("message", message);
+            model.addAttribute("message1", message1);
+            return "scadenze/edit";
+        }
+    }
+    // POST /courses/{id} -> aggiorna un corso esistente
+    @PostMapping(path = "/{idScadenza}/update")
+    public String updateScadenza(@PathVariable("idScadenza") Integer idScadenza,
+                                     @ModelAttribute("scadenzaForm") Scadenza scadenzaForm,
+                                     Model model,
+                                     Principal principal) {
+        Scadenza scadenza = new Scadenza();
+        Beneficiario beneficiario = scadenzaService.findById(idScadenza).getBeneficiario();
+        scadenza.setBeneficiario(beneficiario);
+        scadenza.setImporto(scadenzaForm.getImporto());
+        scadenza.setDataScadenza(scadenzaForm.getDataScadenza());
+        scadenza.setId(idScadenza);
+        scadenza.setSollecito(scadenzaForm.getSollecito());
+        scadenza.setGiorniRitardo((int)scadenzaForm.differanzaGiorni());
+        scadenza.setDataPagamento(scadenzaForm.getDataPagamento());
+        // L'utente loggato
+        String loggedUsername = principal.getName(); // es: "mariorossi"
+        Register user = userService.loadRegisterByUsername(loggedUsername);
+        // Verifico se il proprietario  è lo stesso che ha fatto login
+        if (!user.getUsername().equals(loggedUsername)) {
+            // se non sei il proprietario, redirect o errore
+            return "security/access-denied";
+        }
+        try{
+            scadenzaService.update(scadenza);
+            String message = validazioni(scadenza);
+            if(message != null) {
+                model.addAttribute("message", message);
+                return "redirect:/" + scadenza.getId() + "/edit" + "?message=" + message;
+            }
+        } catch (Exception e) {
+            model.addAttribute("message", e.getMessage());
+            return "redirect:/" + scadenza.getId() + "/editscadenza";
+        }
+        return "redirect:/scadenze/list?message=Scadenza aggiornato con successo!";
+    }
+
+    private String validazioni(Scadenza scadenza) {
+        String message = null;
+        if(scadenza.getImporto()==null) {
+            message="valorizzare l'importo";
+            return message;
+        }
+        if(scadenza.getDataScadenza()==null) {
+            message="valorizzare la data di scadenza";
+            return message;
+        }
+        if(scadenza.getBeneficiario()==null) {
+            message="valorizzare il beneficiario";
+            return message;
+        }
+        return null;
+    }
+
+    @PostMapping("/{id}/deletescadenza")
+    public String deleteScadenza(@PathVariable("id") Integer id,Principal principal,Model model) {
+        Scadenza scadenza = scadenzaService.findById(id);
+        String loggedUsername = principal.getName(); // es: "mario rossi"
+        // Verifico se il proprietario è lo stesso che ha fatto la login
+        boolean isOwner = scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername);
+        if (!isOwner) {
+            // se non sei il proprietario, redirect o errore
+            return "security/access-denied";
+        }
+        scadenzaService.deleteById(id);
+        return "redirect:/scadenze/list?message=Scadenza eliminata con successo!";
+    }
+
+    @GetMapping(value = "/{id}/detailscadenza")
+    public String beneficiariDetail(@PathVariable Integer id,
+                                    @RequestParam(name = "message", required = false) String message,
+                                    @RequestParam(name = "message1", required = false) String message1,
+                                    Model model,
+                                    Principal principal) {
+        Scadenza scadenza = scadenzaService.findById(id);
+        if (scadenza == null) {
+            return "security/access-denied";// Gestione caso corso non trovato
+        }
+        List<Ricevuta> ricevute = ricevutaService.findRicevuteByIdScadenza(id);
+        scadenza.setRicevute(ricevute);
+        // L'utente loggato
+        String loggedUsername = principal.getName();
+        // Verifico se il proprietario  è lo stesso che ha fatto login
+        boolean isOwner = (scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername));
+        String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        model.addAttribute("formattedDataScadenza", formattedDate);
+        String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        model.addAttribute("formattedDataPagamento", formattedDatePagamento);
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        String formattedImporto = currencyFormatter.format(scadenza.getImporto());
+        scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
+        model.addAttribute("formattedImporto", formattedImporto);
+        model.addAttribute("isOwner", isOwner);
+        model.addAttribute("scadenza", scadenza);
+        model.addAttribute("message", message);
+        model.addAttribute("message1", message1);
+        return "scadenze/detail";
+
+    }
+
+
+
+
+
+
+
+
+
+}

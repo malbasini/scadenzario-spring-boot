@@ -1,0 +1,42 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:c="https://jakarta.ee/xml/ns/jakartaee">
+<!-- Inclusione dell'header -->
+<div th:insert="base :: headerFragment"></div>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Home Page</title>
+</head>
+<body>
+<div class="jumbotron">
+    <h1 class="display-4">Benvenuto su Scadenzario!</h1>
+    <p class="lead">Impara in modo semplice e veloce come gestire le tue scadenze online!</p>
+    <img th:src="@{/images/hero.jpg}" th:width="1450px" th:height="400px"/>
+    <hr class="my-4">
+</div>
+<br>
+<section>
+    <div class="row">
+        <div class="col-md-4">
+            <h1 style="color: black"><b>Gestione Scadenze</b></h1>
+            <p><b>Dal menù Scadenze dopo aver creato i beneficiari
+                è possibile creare le nostre scadenze.
+            </b></p>
+        </div>
+        <div class="col-md-4">
+            <h1 style="color: black"><b>Gestione Beneficiario</b></h1>
+            <p><b>Dal menù Beneficiari è possibile creare tutti i beneficiari delle nostre scadenze.</b></p>
+        </div>
+        <div class="col-md-4">
+            <h1 style="color:black"><b>Gestione Utenti</b></h1>
+            <p><b>Spring Boot Security mette a disposizione un efficiente gestione del profilo utente,
+                  in modo semplice e sicuro.</b></p>
+        </div>
+    </div>
+</section>
+</body>
+<!-- Inclusione del footer -->
+<div th:insert="footer :: footerFragment"></div>
+</html>
