@@ -9,13 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
 
-    @Transactional
-    @Query("SELECT s FROM Scadenza s WHERE s.beneficiario = :denominazione")
-    Scadenza findByBeneficiario(@Param("denominazione") String denominazione);
     Page<Scadenza> findByBeneficiarioContainsIgnoreCase(String denominazione, Pageable pageable);
 
     @Transactional
@@ -28,4 +26,10 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
 
     @Query("SELECT b FROM Beneficiario b WHERE b.Id = :id")
     Beneficiario findBeneficiarioById(@Param("id") Integer id);
+
+    Page<Scadenza> findByDataScadenzaContainsIgnoreCase(LocalDate data, Pageable pageable);
+
+    Page<Scadenza> findByDataScadenza(LocalDate data, Pageable pageable);
+
+    Page<Scadenza> findByDenominazione(String beneficiario, Pageable pageable);
 }

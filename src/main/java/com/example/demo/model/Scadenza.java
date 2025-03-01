@@ -39,6 +39,8 @@ public class Scadenza {
     @OneToMany(mappedBy = "scadenza", cascade = CascadeType.ALL)
     private List<Ricevuta> ricevute;
 
+    @Column(name = "denominazione", nullable = false)
+    private String denominazione;
     @Transient
     private String importoFormattato;
     @Transient
@@ -150,5 +152,13 @@ public class Scadenza {
         if(dataPagamentoFormattata != null)
             formattedDate = getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         this.dataPagamentoFormattata = formattedDate;
+    }
+
+    public String getDenominazione() {
+        return denominazione;
+    }
+
+    public void setDenominazione(String denominazione) {
+        this.denominazione = denominazione;
     }
 }

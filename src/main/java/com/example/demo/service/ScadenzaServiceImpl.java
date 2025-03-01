@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 @Service
 public class ScadenzaServiceImpl implements ScadenzaService {
@@ -44,13 +47,24 @@ public class ScadenzaServiceImpl implements ScadenzaService {
         Sort sort = Sort.by(sortBy);
         sort = sortDirection.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        // Filtro per titolo
+        // Filtro per beneficiario e data scadenza
         if (beneficiario != null && !beneficiario.isEmpty()) {
-            return scadenzeRepository.findByBeneficiarioContainsIgnoreCase(beneficiario, pageable);
+            //PARSING DELLA DATA SE L'UTENTE RICERCA PER DATA
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            LocalDate data = null;
+            // Controllare se l'utente ha fornito una data valida
+            try {
+                data = LocalDate.parse(beneficiario, formatter);
+                return scadenzeRepository.findByDataScadenza(data, pageable);
+            } catch (DateTimeParseException e) {
+                //SE LA DATA NON è VALIDA RICERCO PER BENEFICIARIO
+                Page<Scadenza> scadenze = scadenzeRepository.findByDenominazione(beneficiario, pageable);
+                return scadenze;
+            }
         }
-        return scadenzeRepository.findAll(pageable);
+        else
+            return scadenzeRepository.findAll(pageable);
     }
-
     public Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user){
         Beneficiario b = scadenzeRepository.findByBeneficiarioAndIdUser(beneficiario,user.getId());
         return b;

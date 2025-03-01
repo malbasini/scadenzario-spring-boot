@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,10 @@ public class ScadenzaController {
                     .peek(scadenza -> scadenza.setDataPagamentoFormattata(scadenza.getDataPagamento()))
                     .peek(scadenza -> scadenza.setImportoFormattato(scadenza.getImporto()))
                     .collect(Collectors.toList()));
-        scadenze.getContent().get(0).setGiorniRitardo((int)scadenze.getContent().get(0).differanzaGiorni());
+        if(scadenze.getTotalElements() > 0) {
+            scadenze.getContent().get(0).setGiorniRitardo((int)scadenze.getContent().get(0).differanzaGiorni());
+        }
+
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", scadenze.getTotalPages());
         model.addAttribute("titleFilter", beneficiario);
@@ -110,6 +114,7 @@ public class ScadenzaController {
         Scadenza scadenza = new Scadenza();
         Beneficiario b = scadenzaService.findByBeneficiarioAndIdUser(denominazione, user);
         scadenza.setBeneficiario(b);
+        scadenza.setDenominazione(b.getBeneficiario());
         scadenza.setDataScadenza(dataScadenza);
         scadenza.setImporto(importo);
         Scadenza s;
@@ -169,6 +174,7 @@ public class ScadenzaController {
         Scadenza scadenza = new Scadenza();
         Beneficiario beneficiario = scadenzaService.findById(idScadenza).getBeneficiario();
         scadenza.setBeneficiario(beneficiario);
+        scadenza.setDenominazione(beneficiario.getBeneficiario());
         scadenza.setImporto(scadenzaForm.getImporto());
         scadenza.setDataScadenza(scadenzaForm.getDataScadenza());
         scadenza.setId(idScadenza);
