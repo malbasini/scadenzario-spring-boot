@@ -17,4 +17,5 @@ public interface ScadenzaService {
     Page<Scadenza> findScadenze(int page, int size, String beneficiario, String sortBy, String sortDirection);
     Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user);
     List<Beneficiario> findBeneficiariByIdUser(Integer id);
+    Beneficiario findByIdScadenza(Integer idScadenza);
 }

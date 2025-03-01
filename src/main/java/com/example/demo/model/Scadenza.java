@@ -1,11 +1,11 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.NumberFormat;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -18,11 +18,9 @@ public class Scadenza {
     private Integer Id;
 
     @Column(name = "data_scadenza", nullable = false)
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataScadenza;
 
     @Column(name = "importo", nullable = false)
-    @NumberFormat(style = NumberFormat.Style.CURRENCY)
     private BigDecimal importo;
 
     @Column(name = "sollecito")
@@ -32,7 +30,6 @@ public class Scadenza {
     private int giorniRitardo;
 
     @Column(name = "data_pagamento", nullable = true)
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataPagamento;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,6 +39,35 @@ public class Scadenza {
     @OneToMany(mappedBy = "scadenza", cascade = CascadeType.ALL)
     private List<Ricevuta> ricevute;
 
+    @Transient
+    private String importoFormattato;
+    @Transient
+    private String dataScadenzaFormattata;
+    @Transient
+    private String dataPagamentoFormattata;
+
+
+    public long differanzaGiorni() {
+        // Controlla se una delle due date è null
+        long differenzaGiorni = 0;
+        if (getDataScadenza() == null || getDataPagamento() == null) {
+            System.out.println("Una delle due date è null.");
+        } else {
+            // Calcolo della differenza
+            return differenzaGiorni = ChronoUnit.DAYS.between(getDataScadenza(), getDataPagamento());
+        }
+        return 0;
+    }
+
+
+    public String getImportoFormattato() {
+        return importoFormattato;
+    }
+    public void setImportoFormattato(BigDecimal importo) {
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        String formattedImporto = currencyFormatter.format(importo);
+        this.importoFormattato = formattedImporto;
+    }
 
     public Integer getId() {
         return Id;
@@ -80,7 +106,7 @@ public class Scadenza {
     }
 
     public void setGiorniRitardo(int giorniRitardo) {
-       this.giorniRitardo = giorniRitardo;
+        this.giorniRitardo = giorniRitardo;
     }
 
     public LocalDate getDataPagamento() {
@@ -107,15 +133,22 @@ public class Scadenza {
         this.ricevute = ricevute;
     }
 
-    public long differanzaGiorni() {
-        // Controlla se una delle due date è null
-        long differenzaGiorni = 0;
-        if (dataScadenza == null || dataPagamento == null) {
-            System.out.println("Una delle due date è null.");
-        } else {
-            // Calcolo della differenza
-            return differenzaGiorni = ChronoUnit.DAYS.between(dataScadenza, dataPagamento);
-        }
-        return 0;
+    public String getDataScadenzaFormattata() {
+        return dataScadenzaFormattata;
+    }
+    public void setDataScadenzaFormattata(LocalDate dataScadenzaFormattata) {
+        String formattedDate = getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        this.dataScadenzaFormattata = formattedDate;
+    }
+
+    public String getDataPagamentoFormattata() {
+        return dataPagamentoFormattata;
+    }
+
+    public void setDataPagamentoFormattata(LocalDate dataPagamentoFormattata) {
+        String formattedDate = null;
+        if(dataPagamentoFormattata != null)
+            formattedDate = getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        this.dataPagamentoFormattata = formattedDate;
     }
 }

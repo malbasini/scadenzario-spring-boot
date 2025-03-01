@@ -25,7 +25,7 @@ public class RicevutaController {
     @GetMapping("/{id}/ricevuta")
     public String deleteRicevuta(@PathVariable("id") Integer id){
         ricevutaService.deleteById(id);
-        return "redirect:/scadenze/list";
+        return "redirect:/scadenze/list?message=Ricevuta eliminata con successo";
     }
 
     @GetMapping("/{id}/download")

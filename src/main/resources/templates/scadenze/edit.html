@@ -1,5 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org" xmlns:bohdan="http://www.w3.org/1999/xhtml"
+      xmlns:text="http://www.w3.org/1999/xhtml"
       th:inline="text">
 <div th:insert="~{base :: headerFragment}"></div>
 <head>
@@ -32,9 +33,9 @@
     <div class="row">
       <div class="col-md-7"></div>
         <div class="col-md-5 d-flex align-items-center">
-          <button type="submit" class="btn btn-primary btn-lg btn-block">Salva</button>&nbsp;&nbsp;&nbsp;&nbsp;
           <th:block th:if="${isOwner==true}">
-                 <button class="btn btn-danger btn-lg btn-block" type="button"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Elimina</button>
+              <button type="submit" class="btn btn-primary btn-lg btn-block">Salva</button>&nbsp;&nbsp;&nbsp;&nbsp;
+              <button class="btn btn-danger btn-lg btn-block" type="button"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Elimina</button>
           </th:block>
         </div>
     </div>
@@ -97,7 +98,15 @@
 </section>
 <br>
 <th:block th:if="${scadenzaForm.getRicevute().size()>0}">
-  <h2>Ricevute</h2>
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+      <div class="alert alert-info" role="alert">
+        <h3 style="text-align: center">Ricevute</h3>
+      </div>
+    </div>
+    <div class="col-md-3"></div>
+  </div>
   <br>
 <div class="table-responsive-md">
   <table class="table table-striped table-hover">
@@ -133,9 +142,33 @@
             </button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" th:href="|@{/{id}/download(id=${ricevuta.getId()})}|">Scarica</a></li>
-              <li><a class="dropdown-item" th:href="|@{/{id}/ricevuta(id=${ricevuta.getId()})}|">Elimina</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">Elimina</a></li>
             </ul>
           </div>
+          <!--MODAL PER RICEVUTE-->
+          <section>
+            <form method="GET" th:action="|@{/{id}/ricevuta(id=${ricevuta.getId()})}|">
+              <input type="hidden" name="_csrf" value="${_csrf.token}" />
+              <!-- Modal -->
+              <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="staticBackdropLabel1">Elimina Ricevuta</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Stai per eliminare la ricevuta. Procedere?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary">Elimina</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </section>
         </td>
       </tr>
     </th:block>

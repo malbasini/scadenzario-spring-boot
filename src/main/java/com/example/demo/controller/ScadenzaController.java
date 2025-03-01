@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +40,7 @@ public class ScadenzaController {
     @GetMapping("/scadenze/list")
     public String listScadenze(
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
-            @RequestParam(defaultValue = "1") int size, // Elementi per pagina
+            @RequestParam(defaultValue = "10") int size, // Elementi per pagina
             @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
@@ -51,32 +50,15 @@ public class ScadenzaController {
 
         String loggedUsername = principal.getName();
         Register user = userService.loadRegisterByUsername(loggedUsername);
-        // Ottenere i beneficiari con paginazione, ricerca e ordinamento
         Page<Scadenza> scadenze = scadenzaService.findScadenze(page, size, beneficiario, sortBy, sortDirection);
-
-        scadenze.getContent().forEach(scadenza -> {
-            String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-            model.addAttribute("formattedDataScadenza", formattedDate);
-
-        });
-        scadenze.getContent().forEach(scadenza -> {
-            if(scadenza.getDataPagamento()!=null) {
-                String formattedDate = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                model.addAttribute("formattedDataPagamento", formattedDate);
-            }
-        });
-        scadenze.getContent().forEach(scadenza -> {
-            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-            String formattedImporto = currencyFormatter.format(scadenza.getImporto());
-            model.addAttribute("formattedImporto", formattedImporto);
-
-        });
-        scadenze.getContent().forEach(scadenza -> {
-            scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
-        });
-        model.addAttribute("scadenze", scadenze.getContent().stream()
-                .filter(b -> b.getBeneficiario().getUser().getId().equals(user.getId()))
-                .collect(Collectors.toList()));
+            model.addAttribute("scadenze", scadenze.getContent()
+                    .stream()
+                    .filter(scadenza -> scadenza.getBeneficiario().getUser().getId().equals(user.getId()))
+                    .peek(scadenza -> scadenza.setDataScadenzaFormattata(scadenza.getDataScadenza()))
+                    .peek(scadenza -> scadenza.setDataPagamentoFormattata(scadenza.getDataPagamento()))
+                    .peek(scadenza -> scadenza.setImportoFormattato(scadenza.getImporto()))
+                    .collect(Collectors.toList()));
+        scadenze.getContent().get(0).setGiorniRitardo((int)scadenze.getContent().get(0).differanzaGiorni());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", scadenze.getTotalPages());
         model.addAttribute("titleFilter", beneficiario);
@@ -161,8 +143,10 @@ public class ScadenzaController {
         {
             String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             model.addAttribute("formattedDataScadenza", formattedDate);
-            String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-            model.addAttribute("formattedDataPagmento", formattedDatePagamento);
+            if(scadenza.getDataPagamento()!=null) {
+                String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                model.addAttribute("formattedDataPagamento", formattedDatePagamento);
+            }
             NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
             String formattedImporto = currencyFormatter.format(scadenza.getImporto());
             model.addAttribute("formattedImporto", formattedImporto);
@@ -177,7 +161,6 @@ public class ScadenzaController {
             return "scadenze/edit";
         }
     }
-    // POST /courses/{id} -> aggiorna un corso esistente
     @PostMapping(path = "/{idScadenza}/update")
     public String updateScadenza(@PathVariable("idScadenza") Integer idScadenza,
                                      @ModelAttribute("scadenzaForm") Scadenza scadenzaForm,
@@ -201,12 +184,12 @@ public class ScadenzaController {
             return "security/access-denied";
         }
         try{
-            scadenzaService.update(scadenza);
             String message = validazioni(scadenza);
             if(message != null) {
                 model.addAttribute("message", message);
                 return "redirect:/" + scadenza.getId() + "/edit" + "?message=" + message;
             }
+            scadenzaService.update(scadenza);
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
             return "redirect:/" + scadenza.getId() + "/editscadenza";
@@ -263,8 +246,10 @@ public class ScadenzaController {
         boolean isOwner = (scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername));
         String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         model.addAttribute("formattedDataScadenza", formattedDate);
-        String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        model.addAttribute("formattedDataPagamento", formattedDatePagamento);
+        if(scadenza.getDataPagamento()!=null) {
+            String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            model.addAttribute("formattedDataPagamento", formattedDatePagamento);
+        }
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
         String formattedImporto = currencyFormatter.format(scadenza.getImporto());
         scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());

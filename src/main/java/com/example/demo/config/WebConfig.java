@@ -34,12 +34,4 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("home");
     }
-
-    // Imposta la locale di default su ITALIA
-    @Bean
-    public AcceptHeaderLocaleResolver localeResolver() {
-        AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
-        localeResolver.setDefaultLocale(Locale.ITALY);
-        return localeResolver;
-    }
 }
