@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.config.AdminConfig;
 import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Register;
 import com.example.demo.model.Ricevuta;
@@ -38,6 +39,13 @@ public class ScadenzaController {
     @Autowired
     private HtmlSanitizerService sanitizerService;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private AdminConfig adminConfig;
+
+
     @GetMapping("/scadenze/list")
     public String listScadenze(
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
@@ -52,15 +60,15 @@ public class ScadenzaController {
         String loggedUsername = principal.getName();
         Register user = userService.loadRegisterByUsername(loggedUsername);
         Page<Scadenza> scadenze = scadenzaService.findScadenze(page, size, beneficiario, sortBy, sortDirection);
-            model.addAttribute("scadenze", scadenze.getContent()
-                    .stream()
-                    .filter(scadenza -> scadenza.getBeneficiario().getUser().getId().equals(user.getId()))
-                    .peek(scadenza -> scadenza.setDataScadenzaFormattata(scadenza.getDataScadenza()))
-                    .peek(scadenza -> scadenza.setDataPagamentoFormattata(scadenza.getDataPagamento()))
-                    .peek(scadenza -> scadenza.setImportoFormattato(scadenza.getImporto()))
-                    .collect(Collectors.toList()));
-        if(scadenze.getTotalElements() > 0) {
-            scadenze.getContent().get(0).setGiorniRitardo((int)scadenze.getContent().get(0).differanzaGiorni());
+        model.addAttribute("scadenze", scadenze.getContent()
+                .stream()
+                .filter(scadenza -> scadenza.getBeneficiario().getUser().getId().equals(user.getId()))
+                .peek(scadenza -> scadenza.setDataScadenzaFormattata(scadenza.getDataScadenza()))
+                .peek(scadenza -> scadenza.setDataPagamentoFormattata(scadenza.getDataPagamento()))
+                .peek(scadenza -> scadenza.setImportoFormattato(scadenza.getImporto()))
+                .collect(Collectors.toList()));
+        if (scadenze.getTotalElements() > 0) {
+            scadenze.getContent().get(0).setGiorniRitardo((int) scadenze.getContent().get(0).differanzaGiorni());
         }
 
         model.addAttribute("currentPage", page);
@@ -73,9 +81,10 @@ public class ScadenzaController {
 
         return "scadenze/list";
     }
+
     @GetMapping("/scadenza/new")
     public String showCreateForm(Model model,
-                                Principal principal) {
+                                 Principal principal) {
         Scadenza scadenza = new Scadenza();
         String username = principal.getName();  // lo username loggato
         Register user = userService.loadRegisterByUsername(username);
@@ -84,6 +93,7 @@ public class ScadenzaController {
         model.addAttribute("beneficiari", beneficiari);
         return "scadenze/create";
     }
+
     @PostMapping("/scadenza/create")
     public String create(@RequestParam("g-recaptcha-response") String captchaResponse,
                          @RequestParam("denominazione") String denominazione,
@@ -99,15 +109,15 @@ public class ScadenzaController {
             model.addAttribute("message", "Captcha non valido. Riprova.");
             return "scadenze/create";// Torna alla pagina del form
         }
-        if(denominazione==null || denominazione.isEmpty()){
+        if (denominazione == null || denominazione.isEmpty()) {
             model.addAttribute("message", "Il beneficiario è obbligatorio");
             return "scadenze/create";
         }
-        if(dataScadenza==null){
+        if (dataScadenza == null) {
             model.addAttribute("message", "La data scadenza è obbligatoria");
             return "scadenze/create";
         }
-        if(importo==null){
+        if (importo == null) {
             model.addAttribute("message", "L'importo è obbligatorio");
             return "scadenze/create";
         }
@@ -130,10 +140,10 @@ public class ScadenzaController {
 
     @GetMapping("/{id}/editscadenza")
     public String editScadenza(@PathVariable("id") Integer id,
-                       @RequestParam(name = "message", required = false) String message,
-                       @RequestParam(name = "message1", required = false) String message1,
-                       Model model,
-                       Principal principal) {
+                               @RequestParam(name = "message", required = false) String message,
+                               @RequestParam(name = "message1", required = false) String message1,
+                               Model model,
+                               Principal principal) {
         Scadenza scadenza = scadenzaService.findById(id);
         if (scadenza == null) {
             // gestisci errore se non trovato
@@ -141,21 +151,19 @@ public class ScadenzaController {
         }
         List<Ricevuta> ricevute = ricevutaService.findRicevuteByIdScadenza(id);
         scadenza.setRicevute(ricevute);
-        if(scadenza.getBeneficiario().getUser() == null) {
+        if (scadenza.getBeneficiario().getUser() == null) {
             return "security/access-denied";
-        }
-        else
-        {
+        } else {
             String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             model.addAttribute("formattedDataScadenza", formattedDate);
-            if(scadenza.getDataPagamento()!=null) {
+            if (scadenza.getDataPagamento() != null) {
                 String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
                 model.addAttribute("formattedDataPagamento", formattedDatePagamento);
             }
             NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
             String formattedImporto = currencyFormatter.format(scadenza.getImporto());
             model.addAttribute("formattedImporto", formattedImporto);
-            scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
+            scadenza.setGiorniRitardo((int) scadenza.differanzaGiorni());
             // L'utente loggato
             String loggedUsername = principal.getName();
             boolean isOwner = scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername);
@@ -166,11 +174,12 @@ public class ScadenzaController {
             return "scadenze/edit";
         }
     }
+
     @PostMapping(path = "/{idScadenza}/update")
     public String updateScadenza(@PathVariable("idScadenza") Integer idScadenza,
-                                     @ModelAttribute("scadenzaForm") Scadenza scadenzaForm,
-                                     Model model,
-                                     Principal principal) {
+                                 @ModelAttribute("scadenzaForm") Scadenza scadenzaForm,
+                                 Model model,
+                                 Principal principal) {
         Scadenza scadenza = new Scadenza();
         Beneficiario beneficiario = scadenzaService.findById(idScadenza).getBeneficiario();
         scadenza.setBeneficiario(beneficiario);
@@ -179,7 +188,7 @@ public class ScadenzaController {
         scadenza.setDataScadenza(scadenzaForm.getDataScadenza());
         scadenza.setId(idScadenza);
         scadenza.setSollecito(scadenzaForm.getSollecito());
-        scadenza.setGiorniRitardo((int)scadenzaForm.differanzaGiorni());
+        scadenza.setGiorniRitardo((int) scadenzaForm.differanzaGiorni());
         scadenza.setDataPagamento(scadenzaForm.getDataPagamento());
         // L'utente loggato
         String loggedUsername = principal.getName(); // es: "mariorossi"
@@ -189,9 +198,9 @@ public class ScadenzaController {
             // se non sei il proprietario, redirect o errore
             return "security/access-denied";
         }
-        try{
+        try {
             String message = validazioni(scadenza);
-            if(message != null) {
+            if (message != null) {
                 model.addAttribute("message", message);
                 return "redirect:/" + scadenza.getId() + "/edit" + "?message=" + message;
             }
@@ -205,24 +214,25 @@ public class ScadenzaController {
 
     private String validazioni(Scadenza scadenza) {
         String message = null;
-        if(scadenza.getImporto()==null) {
-            message="valorizzare l'importo";
+        if (scadenza.getImporto() == null) {
+            message = "valorizzare l'importo";
             return message;
         }
-        if(scadenza.getDataScadenza()==null) {
-            message="valorizzare la data di scadenza";
+        if (scadenza.getDataScadenza() == null) {
+            message = "valorizzare la data di scadenza";
             return message;
         }
-        if(scadenza.getBeneficiario()==null) {
-            message="valorizzare il beneficiario";
+        if (scadenza.getBeneficiario() == null) {
+            message = "valorizzare il beneficiario";
             return message;
         }
         return null;
     }
 
     @PostMapping("/{id}/deletescadenza")
-    public String deleteScadenza(@PathVariable("id") Integer id,Principal principal,Model model) {
+    public String deleteScadenza(@PathVariable("id") Integer id, Principal principal, Model model) {
         Scadenza scadenza = scadenzaService.findById(id);
+        String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         String loggedUsername = principal.getName(); // es: "mario rossi"
         // Verifico se il proprietario è lo stesso che ha fatto la login
         boolean isOwner = scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername);
@@ -231,7 +241,7 @@ public class ScadenzaController {
             return "security/access-denied";
         }
         scadenzaService.deleteById(id);
-        return "redirect:/scadenze/list?message=Scadenza eliminata con successo!";
+        return "redirect:/" + id + "/" +formattedDate + "/infoscadenza";
     }
 
     @GetMapping(value = "/{id}/detailscadenza")
@@ -252,13 +262,13 @@ public class ScadenzaController {
         boolean isOwner = (scadenza.getBeneficiario().getUser().getUsername().equals(loggedUsername));
         String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         model.addAttribute("formattedDataScadenza", formattedDate);
-        if(scadenza.getDataPagamento()!=null) {
+        if (scadenza.getDataPagamento() != null) {
             String formattedDatePagamento = scadenza.getDataPagamento().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             model.addAttribute("formattedDataPagamento", formattedDatePagamento);
         }
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
         String formattedImporto = currencyFormatter.format(scadenza.getImporto());
-        scadenza.setGiorniRitardo((int)scadenza.differanzaGiorni());
+        scadenza.setGiorniRitardo((int) scadenza.differanzaGiorni());
         model.addAttribute("formattedImporto", formattedImporto);
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("scadenza", scadenza);
@@ -268,12 +278,19 @@ public class ScadenzaController {
 
     }
 
-
-
-
-
-
-
-
-
+    @GetMapping("/{id}/{dataScadenza}/infoscadenza")
+    public String infoAdmin(@PathVariable Integer id,
+                            @PathVariable String dataScadenza )
+    {
+          try {
+              emailService.sendSimpleEmail(
+                      adminConfig.getEmail(),
+                      "Eliminazione Scadenza",
+                      "La scadenza con identificativo " + id + " in scadenza il " + dataScadenza + " è stata eliminata!"
+              );
+          } catch (Exception e) {
+              return "redirect:/scadenze/list?message=Errore invio email all'amministratore: ! " + e.getMessage();
+          }
+          return "redirect:/scadenze/list?message=Scadenza eliminata con successo ed email all'amministratore inviata correttamente!";
+    }
 }

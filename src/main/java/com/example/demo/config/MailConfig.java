@@ -33,4 +33,5 @@ public class MailConfig {
     public String getPassword() {
         return password;
     }
+
 }

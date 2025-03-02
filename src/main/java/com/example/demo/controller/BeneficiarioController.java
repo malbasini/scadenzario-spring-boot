@@ -1,12 +1,11 @@
 package com.example.demo.controller;
 
 
+import com.example.demo.config.AdminConfig;
 import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Register;
-import com.example.demo.service.BeneficiarioService;
-import com.example.demo.service.CaptchaValidator;
-import com.example.demo.service.HtmlSanitizerService;
-import com.example.demo.service.UserService;
+import com.example.demo.model.Scadenza;
+import com.example.demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -34,6 +33,12 @@ public class BeneficiarioController {
 
     @Autowired
     private HtmlSanitizerService sanitizerService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private AdminConfig adminConfig;
 
 
     // GET /courses -> listing di tutti i corsi con supporto a paginazione, ricerca e ordinamento
@@ -202,8 +207,8 @@ public class BeneficiarioController {
         //SANITIZZAZIONE
         Beneficiario beneficiario = new Beneficiario();
         beneficiario.setBeneficiario(denominazione);
-        beneficiario.setEmail(sanitizerService.sanitize(email));
-        beneficiario.setTelefono(sanitizerService.sanitize(telefono));
+        beneficiario.setEmail(email);
+        beneficiario.setTelefono(telefono);
         beneficiario.setSitoWeb(sanitizerService.sanitize(sitoWeb));
         beneficiario.setDescrizione(sanitizerService.sanitize(descrizione));
         // L'utente loggato
@@ -257,6 +262,7 @@ public class BeneficiarioController {
     @PostMapping("/{id}/delete")
     public String deleteCourse(@PathVariable("id") Integer id,Principal principal,Model model) {
         Beneficiario beneficiario = beneficiarioService.findById(id);
+        String denominazione = beneficiario.getBeneficiario();
         String loggedUsername = principal.getName(); // es: "mario rossi"
         // Verifico se il proprietario è lo stesso che ha fatto la login
         boolean isOwner = beneficiario.getUser().getUsername().equals(loggedUsername);
@@ -266,7 +272,24 @@ public class BeneficiarioController {
             return "security/access-denied";
         }
         beneficiarioService.deleteById(id);
-        return "redirect:/beneficiari/list?message=Beneficiario eliminato con successo!";
+        return "redirect:/" + id + "/" + denominazione + "/infobeneficiario";
+    }
+
+
+    @GetMapping("/{id}/{denominazione}/infobeneficiario")
+    public String infoAdmin(@PathVariable("id") Integer id,
+                            @PathVariable("denominazione") String denominazione)
+    {
+        try {
+            emailService.sendSimpleEmail(
+                    adminConfig.getEmail(),
+                    "Eliminazione Beneficiario",
+                    "Il beneficiario con identificativo " + id + " e denominazione " + denominazione + " è stato eliminato!"
+            );
+        } catch (Exception e) {
+            return "redirect:/beneficiari/list?message=Errore invio email "+ e.getMessage();
+        }
+        return "redirect:/beneficiari/list?message=Beneficiario eliminato con successo ed email all'amministratore inviata correttamente!";
     }
 
 
