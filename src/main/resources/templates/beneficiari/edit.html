@@ -33,7 +33,7 @@
         <div class="col-md-3 d-flex align-items-center">
           <button type="submit" class="btn btn-primary btn-lg btn-block">Salva</button>&nbsp;&nbsp;&nbsp;&nbsp;
           <!-- Qui dentro verrà mostrato solo se l'utente loggato ha 'ROLE_ADMIN' -->
-          <th:block th:if="${isAdmin}">
+          <th:block th:if="${isOwner==true}">
                  <button class="btn btn-danger btn-lg btn-block" type="button"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">Elimina</button>
           </th:block>
         </div>

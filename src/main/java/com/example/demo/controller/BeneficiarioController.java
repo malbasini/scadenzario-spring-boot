@@ -178,15 +178,10 @@ public class BeneficiarioController {
         }
         else
         {
-            boolean isAdmin = false;
-            // L'utente loggato
             String loggedUsername = principal.getName();
             Register user = userService.loadRegisterByUsername(loggedUsername);
-            if(user.getRoles().stream().anyMatch(role -> role.getName().equals("ADMIN"))) {
-                isAdmin = true;
-                model.addAttribute("isAdmin",isAdmin);
-            }
-            model.addAttribute("isAdmin", isAdmin);
+            boolean isOwner = (beneficiario.getUser().getUsername().equals(loggedUsername));
+            model.addAttribute("isOwner", isOwner);
             model.addAttribute("beneficiarioForm", beneficiario);
             model.addAttribute("iduser",beneficiario.getUser().getId());
             model.addAttribute("message", message);
