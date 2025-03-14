@@ -127,6 +127,7 @@ public class ScadenzaController {
         scadenza.setDenominazione(b.getBeneficiario());
         scadenza.setDataScadenza(dataScadenza);
         scadenza.setImporto(importo);
+        scadenza.setStatus("DA PAGARE");
         Scadenza s;
         try {
             s = scadenzaService.save(scadenza);
