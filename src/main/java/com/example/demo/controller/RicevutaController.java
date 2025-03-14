@@ -61,7 +61,4 @@ public class RicevutaController {
             return ResponseEntity.status(500).body("Errore durante il salvataggio del file.");
         }
     }
-
-
-
 }

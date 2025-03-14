@@ -100,14 +100,20 @@
                     </td>
                     <td>
                         <div class="dropdown">
-                            <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Paga
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">PagoPA</a></li>
-                                <li><a class="dropdown-item" href="#" >Paypal</a></li>
-                                <li><a class="dropdown-item" href="#" >Stripe</a></li>
-                            </ul>
+                            <th:block th:if="${scadenza.getStatus() != null} and ${!scadenza.getStatus().equals('pagato')}">
+                                    <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Paga
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" th:href="|@{/paypal/{scadenzaId}/pay(scadenzaId=${scadenza.getId()})}|">Paypal</a></li>
+                                        <li><a class="dropdown-item" th:href="|@{/stripe/{scadenzaId}/checkout(scadenzaId=${scadenza.getId()})}|">Stripe</a></li>
+                                    </ul>
+                            </th:block>
+                            <th:block th:if="${scadenza.getStatus()!=null} and ${scadenza.getStatus().equals('pagato')}">
+                                <button class="btn btn-success" type="button" aria-expanded="false">
+                                    Pagata
+                                </button>
+                            </th:block>
                         </div>
                     </td>
                 </tr>

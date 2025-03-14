@@ -27,7 +27,9 @@
 <br>
 <h1>Aggiorna Scadenza</h1>
 <section class="course-info">
-  <form method="post" th:action="|@{/{idScadenza}/update(idScadenza=${scadenzaForm.getId()})}|" ModelAttribute="scadenzaForm" enctype="multipart/form-data">
+  <form method="post" th:action="@{/{idScadenza}/{status}/update(idScadenza=${scadenzaForm.getId()}, status=${scadenzaForm.getStatus()})}"
+
+        ModelAttribute="scadenzaForm" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
     <input type="hidden" th:id="idScadenza" th:value="${scadenzaForm.getId()}" />
     <div class="row">
@@ -81,6 +83,13 @@
             <label>Data pagamento</label>
             <div class="input-group">
               <input type="date" id="dataPagamento" name="dataPagamento" th:value="${scadenzaForm.getDataPagamento()}" class="form-control form-control-block"/>
+            </div>
+          </div>
+          <br>
+          <div class="form-group">
+            <label>Status</label>
+            <div class="input-group">
+              <input type="text" id="status" name="status" th:value="${scadenzaForm.getStatus()}" class="form-control form-control-block" readonly="readonly"/>
             </div>
           </div>
           <br>

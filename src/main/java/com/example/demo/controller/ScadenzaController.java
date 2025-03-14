@@ -145,6 +145,7 @@ public class ScadenzaController {
                                Model model,
                                Principal principal) {
         Scadenza scadenza = scadenzaService.findById(id);
+        scadenza.setStatus(scadenza.getStatus());
         if (scadenza == null) {
             // gestisci errore se non trovato
             return "security/access-denied";
@@ -175,8 +176,9 @@ public class ScadenzaController {
         }
     }
 
-    @PostMapping(path = "/{idScadenza}/update")
+    @PostMapping(path = "/{idScadenza}/{status}/update")
     public String updateScadenza(@PathVariable("idScadenza") Integer idScadenza,
+                                 @PathVariable("status") String status,
                                  @ModelAttribute("scadenzaForm") Scadenza scadenzaForm,
                                  Model model,
                                  Principal principal) {
@@ -190,6 +192,7 @@ public class ScadenzaController {
         scadenza.setSollecito(scadenzaForm.getSollecito());
         scadenza.setGiorniRitardo((int) scadenzaForm.differanzaGiorni());
         scadenza.setDataPagamento(scadenzaForm.getDataPagamento());
+        scadenza.setStatus(status);
         // L'utente loggato
         String loggedUsername = principal.getName(); // es: "mariorossi"
         Register user = userService.loadRegisterByUsername(loggedUsername);
@@ -205,6 +208,7 @@ public class ScadenzaController {
                 return "redirect:/" + scadenza.getId() + "/edit" + "?message=" + message;
             }
             scadenzaService.update(scadenza);
+            model.addAttribute("scadenza", scadenza);
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
             return "redirect:/" + scadenza.getId() + "/editscadenza";

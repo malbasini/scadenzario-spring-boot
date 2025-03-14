@@ -41,6 +41,10 @@ public class Scadenza {
 
     @Column(name = "denominazione", nullable = false)
     private String denominazione;
+
+    @Column(name = "status", nullable = true)
+    private String status;
+
     @Transient
     private String importoFormattato;
     @Transient
@@ -160,5 +164,13 @@ public class Scadenza {
 
     public void setDenominazione(String denominazione) {
         this.denominazione = denominazione;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

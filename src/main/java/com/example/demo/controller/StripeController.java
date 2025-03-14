@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/stripe")
@@ -55,6 +56,12 @@ public class StripeController {
         try {
             Subscription subscription = stripeService.handleCheckoutSession(sessionId,httpSession);
             if (subscription != null) {
+                //AGGIORNO LA DATA PAGMENTO E LO STATUS DELLA SCADENZA
+                int scadenzaId = (int) httpSession.getAttribute("scadenzaId");
+                Scadenza scadenza = scadenzaService.findById(scadenzaId);
+                scadenza.setDataPagamento(LocalDate.now());
+                scadenza.setStatus("pagato");
+                scadenzaService.save(scadenza);
                 model.addAttribute("subscription", subscription);
                 return "stripe/paymentsuccess";
             }

@@ -83,6 +83,10 @@
               <label>Data Pagamento</label>:&nbsp
               <th:block th:text="${formattedDataPagamento}"></th:block>
             </div>
+            <div class="input-group">
+              <label>Status</label>:&nbsp
+              <th:block th:text="${scadenza.getStatus()}"></th:block>
+            </div>
           </div>
           <div class="card-footer">
             Footer

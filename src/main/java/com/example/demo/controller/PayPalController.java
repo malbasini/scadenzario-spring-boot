@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.time.LocalDate;
 
 /**
  * Controller classico Spring MVC (senza @RestController se si usano JSP).
@@ -70,13 +71,21 @@ public class PayPalController {
     // Rotta di successo definita come returnUrl in createPayment
     @GetMapping("/success")
     public String successPay(@RequestParam("paymentId") String paymentId,
-                             @RequestParam("PayerID") String payerId, Model model, HttpSession httpSession) {
+                             @RequestParam("PayerID") String payerId,
+                             Model model,
+                             HttpSession httpSession) {
         try {
             Subscription subscription = payPalService.executePayment(paymentId, payerId, httpSession);
             if (subscription != null) {
                 // Pagamento completato con successo:
                 // mostra una pagina di conferma, ad es. "paymentSuccess.jsp"
                 model.addAttribute("subscription", subscription);
+                //AGGIORNO LA DATA PAGMENTO E LO STATUS DELLA SCADENZA
+                int scadenzaId = (int) httpSession.getAttribute("scadenzaId");
+                Scadenza scadenza = scadenzaService.findById(scadenzaId);
+                scadenza.setDataPagamento(LocalDate.now());
+                scadenza.setStatus("pagato");
+                scadenzaService.save(scadenza);
                 return "paypal/paymentsuccess";
             }
         } catch (PayPalRESTException e) {
