@@ -105,6 +105,7 @@
                                         Paga
                                     </button>
                                     <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="https://www.pagopa.gov.it/" target="_blank">PagoPA</a></li>
                                         <li><a class="dropdown-item" th:href="|@{/paypal/{scadenzaId}/pay(scadenzaId=${scadenza.getId()})}|">Paypal</a></li>
                                         <li><a class="dropdown-item" th:href="|@{/stripe/{scadenzaId}/checkout(scadenzaId=${scadenza.getId()})}|">Stripe</a></li>
                                     </ul>
