@@ -32,4 +32,6 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
     Page<Scadenza> findByDataScadenza(LocalDate data, Pageable pageable);
 
     Page<Scadenza> findByDenominazione(String beneficiario, Pageable pageable);
+
+    Page<Scadenza> findByDenominazioneContainingIgnoreCase(String beneficiario, Pageable pageable);
 }

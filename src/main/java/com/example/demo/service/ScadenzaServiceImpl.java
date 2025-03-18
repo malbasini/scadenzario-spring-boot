@@ -42,7 +42,7 @@ public class ScadenzaServiceImpl implements ScadenzaService {
     public Scadenza update(Scadenza scadenza) {
         return scadenzeRepository.save(scadenza);
     }
-
+    @Transactional
     public Page<Scadenza> findScadenze(int page, int size, String beneficiario, String sortBy, String sortDirection) {
         Sort sort = Sort.by(sortBy);
         sort = sortDirection.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
@@ -58,18 +58,19 @@ public class ScadenzaServiceImpl implements ScadenzaService {
                 return scadenzeRepository.findByDataScadenza(data, pageable);
             } catch (DateTimeParseException e) {
                 //SE LA DATA NON è VALIDA RICERCO PER BENEFICIARIO
-                Page<Scadenza> scadenze = scadenzeRepository.findByDenominazione(beneficiario, pageable);
+                Page<Scadenza> scadenze = scadenzeRepository.findByDenominazioneContainingIgnoreCase(beneficiario, pageable);
                 return scadenze;
             }
         }
         else
             return scadenzeRepository.findAll(pageable);
     }
+    @Transactional
     public Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user){
         Beneficiario b = scadenzeRepository.findByBeneficiarioAndIdUser(beneficiario,user.getId());
         return b;
     }
-
+    @Transactional
     public List<Beneficiario> findBeneficiariByIdUser(Integer id){
         return scadenzeRepository.findBeneficiariByIdUser(id);
     }

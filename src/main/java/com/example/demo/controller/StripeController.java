@@ -61,6 +61,7 @@ public class StripeController {
                 Scadenza scadenza = scadenzaService.findById(scadenzaId);
                 scadenza.setDataPagamento(LocalDate.now());
                 scadenza.setStatus("pagato");
+                scadenza.setGiorniRitardo((int) scadenza.differanzaGiorni());
                 scadenzaService.save(scadenza);
                 model.addAttribute("subscription", subscription);
                 return "stripe/paymentsuccess";

@@ -85,6 +85,7 @@ public class PayPalController {
                 Scadenza scadenza = scadenzaService.findById(scadenzaId);
                 scadenza.setDataPagamento(LocalDate.now());
                 scadenza.setStatus("pagato");
+                scadenza.setGiorniRitardo((int) scadenza.differanzaGiorni());
                 scadenzaService.save(scadenza);
                 return "paypal/paymentsuccess";
             }

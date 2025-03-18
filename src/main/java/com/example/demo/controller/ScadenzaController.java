@@ -66,6 +66,7 @@ public class ScadenzaController {
                 .peek(scadenza -> scadenza.setDataScadenzaFormattata(scadenza.getDataScadenza()))
                 .peek(scadenza -> scadenza.setDataPagamentoFormattata(scadenza.getDataPagamento()))
                 .peek(scadenza -> scadenza.setImportoFormattato(scadenza.getImporto()))
+                .peek(scadenza -> scadenza.setGiorniRitardo((int) scadenza.differanzaGiorni()))
                 .collect(Collectors.toList()));
         if (scadenze.getTotalElements() > 0) {
             scadenze.getContent().get(0).setGiorniRitardo((int) scadenze.getContent().get(0).differanzaGiorni());

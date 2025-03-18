@@ -45,7 +45,7 @@ public class BeneficiarioController {
     @GetMapping("/beneficiari/list")
     public String listBeneficiari(
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
-            @RequestParam(defaultValue = "1") int size, // Elementi per pagina
+            @RequestParam(defaultValue = "10") int size, // Elementi per pagina
             @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
