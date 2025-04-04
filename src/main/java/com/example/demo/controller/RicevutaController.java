@@ -21,8 +21,7 @@ public class RicevutaController {
     @Autowired
     private ScadenzaService scadenzaService;
 
-
-    @GetMapping("/{id}/ricevuta")
+    @GetMapping("/{id}/deletericevuta")
     public String deleteRicevuta(@PathVariable("id") Integer id){
         ricevutaService.deleteById(id);
         return "redirect:/scadenze/list?message=Ricevuta eliminata con successo";

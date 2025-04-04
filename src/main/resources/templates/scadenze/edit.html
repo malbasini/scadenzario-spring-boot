@@ -106,85 +106,6 @@
   </form>
 </section>
 <br>
-<th:block th:if="${scadenzaForm.getRicevute().size()>0}">
-  <div class="row">
-    <div class="col-md-3"></div>
-    <div class="col-md-6">
-      <div class="alert alert-info" role="alert">
-        <h3 style="text-align: center">Ricevute</h3>
-      </div>
-    </div>
-    <div class="col-md-3"></div>
-  </div>
-  <br>
-<div class="table-responsive-md">
-  <table class="table table-striped table-hover">
-    <thead class="thead-light">
-    <tr>
-      <th scope="col">Id</th>
-      <th scope="col">Nome file</th>
-      <th scope="col">Tipo</th>
-      <th scope="col">Id Scadenza</th>
-      <th scope="col"></th>
-    </tr>
-    </thead>
-    <tbody>
-    <br>
-    <th:block th:each="ricevuta : ${scadenzaForm.getRicevute()}">
-      <tr>
-        <td>
-          <th:block th:text="${ricevuta.getId()}"></th:block>
-        </td>
-        <td>
-          <th:block th:utext="${ricevuta.getNomeFile()}"></th:block>
-        </td>
-        <td>
-          <th:block th:utext="${ricevuta.getTipoFile()}"></th:block>
-        </td>
-        <td>
-          <th:block th:utext="${ricevuta.getScadenza().getId()}"></th:block>
-        </td>
-        <td>
-          <div class="dropdown">
-            <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Azioni
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" th:href="|@{/{id}/download(id=${ricevuta.getId()})}|">Scarica</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">Elimina</a></li>
-            </ul>
-          </div>
-          <!--MODAL PER RICEVUTE-->
-          <section>
-            <form method="GET" th:action="|@{/{id}/ricevuta(id=${ricevuta.getId()})}|">
-              <input type="hidden" name="_csrf" value="${_csrf.token}" />
-              <!-- Modal -->
-              <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="staticBackdropLabel1">Elimina Ricevuta</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      Stai per eliminare la ricevuta. Procedere?
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="submit" class="btn btn-primary">Elimina</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </section>
-        </td>
-      </tr>
-    </th:block>
-    </tbody>
-  </table>
-</div>
-</th:block>
 <section>
   <form method="post" th:action="|@{/{id}/deletescadenza(id=${scadenzaForm.getId()})}|">
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
@@ -208,6 +129,91 @@
     </div>
   </form>
 </section>
+      <br>
+      <th:block th:if="${scadenzaForm.getRicevute().size()>0}">
+        <div class="row">
+          <div class="col-md-3"></div>
+          <div class="col-md-6">
+            <div class="alert alert-info" role="alert">
+              <h3 style="text-align: center">Ricevute</h3>
+            </div>
+          </div>
+          <div class="col-md-3"></div>
+        </div>
+        <br>
+      <div class="table-responsive-md">
+        <table class="table table-striped table-hover">
+          <thead class="thead-light">
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Nome file</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Id Scadenza</th>
+            <th scope="col"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <br>
+          <th:block th:each="ricevuta : ${scadenzaForm.getRicevute()}">
+            <tr>
+              <td>
+                <th:block th:text="${ricevuta.getId()}"></th:block>
+              </td>
+              <td>
+                <th:block th:utext="${ricevuta.getNomeFile()}"></th:block>
+              </td>
+              <td>
+                <th:block th:utext="${ricevuta.getTipoFile()}"></th:block>
+              </td>
+              <td>
+                <th:block th:utext="${ricevuta.getScadenza().getId()}"></th:block>
+              </td>
+              <td>
+                <div class="dropdown">
+                  <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Azioni
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" th:href="|@{/{id}/download(id=${ricevuta.getId()})}|">Scarica</a></li>
+                    <li><a class="dropdown-item" th:href="@{/{id}/deletericevuta(id=${ricevuta.getId()})}">Elimina</a></li>
+                  </ul>
+                      <section>
+                        <form method="GET">
+                          <!-- Modal -->
+                          <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h1 class="modal-title fs-5" id="staticBackdropLabel1">Elimina Ricevuta</h1>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  Stai per eliminare la ricevuta. Procedere?
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary">Elimina</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </form>
+                      </section>
+                </div>
+                <!--MODAL PER RICEVUTE-->
+              </td>
+            </tr>
+          </th:block>
+          </tbody>
+        </table>
+      </div>
+      </th:block>
+<script>
+  function submit(){
+     document.getElementById("myform").submit();
+  }
+</script>
+
 <script>
   $(document).ready(function () {
     $("#btnUpload").click(function (e) {
@@ -244,3 +250,31 @@
 <div th:insert="~{footer :: footerFragment}"></div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

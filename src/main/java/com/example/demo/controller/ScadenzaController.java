@@ -247,7 +247,7 @@ public class ScadenzaController {
             return "security/access-denied";
         }
         scadenzaService.deleteById(id);
-        return "redirect:/" + id + "/" +formattedDate + "/infoscadenza";
+        return "redirect:/scadenze/list?message=Scadenza eliminata con successo!";
     }
 
     @GetMapping(value = "/{id}/detailscadenza")
