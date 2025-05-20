@@ -1,0 +1,162 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:inline="text">
+<div th:insert="~{base :: headerFragment}"></div>
+<br>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Lista Beneficari</title>
+    <div class="row">
+        <div class="col-md-12">
+            <th:block th:if="${!#strings.isEmpty(message)}">
+                <div class="alert alert-info" role="alert">
+                    <th:block th:text="${message}"></th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <th:block th:if="${!#strings.isEmpty(message1)}">
+                <div class="alert alert-danger" role="alert">
+                    <th:block th:text="${message1}"></th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</head>
+<body>
+<br>
+<div class="row">
+    <div class="col-md-3">
+        <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>
+    </div>
+    <div class="col-md-9 d-flex flex-row-reverse">
+        <form th:action="@{/scadenze/list(page=${currentPage}, size=1, sortBy='beneficiario', sortDirection=${sortBy == 'beneficiario' and sortDirection == 'asc' ? 'desc' : 'asc'})}" method="GET">
+            <div class="input-group">
+                <b style="text-align: center;">Beneficiario/Data Scadenza</b>&nbsp;&nbsp;&nbsp;<input type="text" name="beneficiario" th:value="${titleFilter}" placeholder="Cerca..." aria-label="Cerca..." aria-describedby="search-button">
+                <button class="input-group-text" id="search-button"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+<br>
+<div class="table-responsive-md">
+    <table class="table table-striped table-hover">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col"><a th:href="|?page=${currentPage}&size=10&beneficiario=${titleFilter}&sortBy=beneficiario&sortDirection=${sortBy == 'beneficiario' && sortDirection == 'asc' ? 'desc' : 'asc'}|">
+                Beneficiario
+                <th:block th:if="${sortBy=='beneficiario' && sortDirection=='asc'}">
+                    <i class="fas fa-caret-up"></i>
+                </th:block>
+                <th:block th:if="${sortBy=='beneficiario' && sortDirection=='desc'}">
+                    <i class="fas fa-caret-down"></i>
+                </th:block>
+            </a></th>
+            <th scope="col"><a th:href="|?page=${currentPage}&size=10&dataScadenza=${titleFilter}&sortBy=dataScadenza&sortDirection=${sortBy == 'dataScadenza' && sortDirection == 'asc' ? 'desc' : 'asc'}|">
+                Data Scadenza
+                <th:block th:if="${sortBy=='dataScadenza' && sortDirection=='asc'}">
+                    <i class="fas fa-caret-up"></i>
+                </th:block>
+                <th:block th:if="${sortBy=='dataScadenza' && sortDirection=='desc'}">
+                    <i class="fas fa-caret-down"></i>
+                </th:block>
+            </a></th>
+            <th scope="col"><a th:href="|?page=${currentPage}&size=10&importo=${titleFilter}&sortBy=importo&sortDirection=${sortBy == 'importo' && sortDirection == 'asc' ? 'desc' : 'asc'}|">
+                Importo
+                <th:block th:if="${sortBy=='importo' && sortDirection=='asc'}">
+                    <i class="fas fa-caret-up"></i>
+                </th:block>
+                <th:block th:if="${sortBy=='importo' && sortDirection=='desc'}">
+                    <i class="fas fa-caret-down"></i>
+                </th:block>
+            </a></th>
+            <th scope="col">Sollecito</th>
+            <th scope="col">Giorni ritardo</th>
+            <th scope="col">Data pagamento</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <br>
+            <th:block th:each="scadenza : ${scadenze}">
+                <tr>
+                    <td>
+                        <th:block th:text="${scadenza.getBeneficiario().getBeneficiario()}"></th:block>
+                    </td>
+                    <td>
+                        <th:block th:text = "${scadenza.getDataScadenzaFormattata()}"></th:block>
+                    </td>
+                    <td>
+                        <span th:text="${scadenza.getImportoFormattato()}"></span>
+                    </td>
+                    <td>
+                        <th:block th:text="${scadenza.getSollecito()}"></th:block>
+                    </td>
+                    <td>
+                        <span th:class="${scadenza.getGiorniRitardo() > 0} ? 'text-red' : 'text-black'" th:text="${scadenza.getGiorniRitardo()}"></span>
+                    </td>
+                    <td>
+                        <th:block th:text="${scadenza.getDataPagamentoFormattata()}"></th:block>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="btn btn-outline-primary" th:href="|@{/{id}/detailscadenza(id=${scadenza.getId()})}|">Dettaglio</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <th:block th:if="${scadenza.getStatus() != null} and ${!scadenza.getStatus().equals('pagato')}">
+                                    <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Paga
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="https://www.pagopa.gov.it/" target="_blank">PagoPA</a></li>
+                                        <li><a class="dropdown-item" th:href="|@{/paypal/{scadenzaId}/pay(scadenzaId=${scadenza.getId()})}|">Paypal</a></li>
+                                        <li><a class="dropdown-item" th:href="|@{/stripe/{scadenzaId}/checkout(scadenzaId=${scadenza.getId()})}|">Stripe</a></li>
+                                    </ul>
+                            </th:block>
+                            <th:block th:if="${scadenza.getStatus()!=null} and ${scadenza.getStatus().equals('pagato')}">
+                                <button class="btn btn-success" type="button" aria-expanded="false">
+                                    Pagata
+                                </button>
+                            </th:block>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+        </tbody>
+    </table>
+</div>
+<br/>
+<th:block th:if="${totalPages > 0}">
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+            <a class="page-link" th:href="|?page=${currentPage - 1}&size=10&beneficiario=${titleFilter}&sortBy=${sortBy}&sortDirection=${sortDirection}|" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <li class="page-item" th:classappend="${i == currentPage} ? 'active' : ''">
+                <a class="page-link" th:href="|?page=${i}&size=10&beneficiario=${titleFilter}&sortBy=${sortBy}&sortDirection=${sortDirection}|">
+                    <th:block th:text="${i + 1}"></th:block>
+                </a>
+            </li>
+        </th:block>
+        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+            <a class="page-link" th:href="|?page=${currentPage + 1}&size=10&beneficiario=${titleFilter}&sortBy=${sortBy}&sortDirection=${sortDirection}|" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+</th:block>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+<div th:insert="~{footer :: footerFragment}"></div>
