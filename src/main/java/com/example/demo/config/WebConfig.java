@@ -21,6 +21,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/**").addResourceLocations("file:/Users/malbasini/Documents/Software/Spring Boot/Spring Boot Demo/uploads/");
         registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/images/");
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
+        registry.addResourceHandler("/images/**").addResourceLocations("classpath:/static/images/");
+
 
     }
     // Opzionale: Configura la mappatura della home senza controller
