@@ -37,8 +37,8 @@ public class StripeController {
         session.setAttribute("scadenzaId", scadenzaId);
         BigDecimal amount = new BigDecimal(String.valueOf(scadenza.getImporto().doubleValue()));
         String currency = "EUR";
-        String successUrl = "http://localhost:8080/stripe/success";
-        String cancelUrl = "http://localhost:8080/stripe/cancel";
+        String successUrl = "https://localhost:8443/stripe/success";
+        String cancelUrl = "https://localhost:8443/stripe/cancel";
         try {
             String checkoutUrl = String.valueOf(stripeService.createCheckoutSession(userId, scadenzaId, amount, currency, successUrl, cancelUrl
             ));

@@ -47,8 +47,8 @@ public class PayPalController {
         BigDecimal amount = scadenza.getImporto();
         String currency = "EUR";
         String description = scadenza.getBeneficiario().getDescrizione();
-        String successUrl = "http://localhost:8080/paypal/success";
-        String cancelUrl = "http://localhost:8080/paypal/cancel";
+        String successUrl = "https://localhost:8443/paypal/success";
+        String cancelUrl = "https://localhost:8443/paypal/cancel";
         try {
                 String approvalLink = payPalService.createPayment(
                     user,
