@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<div th:insert="~{base :: headerFragment}"></div>
+<br>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Nuova Scadenza</title>
+    <div class="row">
+        <div class="col-md-12">
+            <th:block th:if="${!#strings.isEmpty(message)}">
+                <div class="alert alert-danger" role="alert">
+                    <th:block th:text="${message}"></th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</head>
+<body>
+<br>
+<form method="post"  th:action="|@{/scadenza/create}|">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <span class="input-group-text" id="inputGroup-sizing-sm5">Beneficiario</span>
+                <br>
+                <select class="form-select form-select-sm"  th:name="denominazione" aria-label="Small select example" required="required">
+                    <option value="" disabled selected>Seleziona un beneficiario</option>
+                    <th:block th:each="beneficiario : ${beneficiari}">
+                        <option  th:text="${beneficiario.getBeneficiario()}" th:value="${beneficiario.getBeneficiario()}"></option>
+                    </th:block>
+
+                </select>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    <br>
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <span class="input-group-text" id="inputGroup-sizing-sm4">Data scadenza</span>
+                <br>
+                <input type="date" name="dataScadenza" class="form-control" id="floatingPassword1" placeholder="Data Scadenza" required="required"/>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    <br>
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <span class="input-group-text" id="inputGroup-sizing-sm6">Importo</span>
+                <br>
+                <input type="number" step="any" name="importo"  class="form-control" id="floatingPassword" placeholder="Importo" required="required"/>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+        <br>
+        <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <div class="g-recaptcha col-sm-5" th:attr="data-sitekey=${@captchaSettings.getSite()}"></div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="fas fa-rocket"></i> Crea scadenza</button>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+</form>
+</body>
+</html>
+<div th:insert="~{footer :: footerFragment}"></div>

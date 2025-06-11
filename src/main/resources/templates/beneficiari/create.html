@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<div th:insert="~{base :: headerFragment}"></div>
+<br>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Nuovo Beneficiario</title>
+    <div class="row">
+        <div class="col-md-12">
+            <th:block th:if="${!#strings.isEmpty(message)}">
+                <div class="alert alert-danger" role="alert">
+                    <th:block th:text="${message}"></th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</head>
+<body>
+<br>
+<form method="post"  th:action="|@{/beneficiario/create}|">
+    <div class="row">
+        <div class="form-floating mb-3 col-md-6">
+            <input type="text" name="denominazione" class="form-control" id="floatingInput" placeholder="Denominazione" required="required" minlength="5" maxlength="50">
+            <label for="floatingInput">Beneficiario</label>
+        </div>
+        <div class="form-floating col-md-6">
+            <input type="text" name="description" class="form-control" id="floatingPassword" placeholder="Descrizione" required="required" minlength="5" maxlength="50">
+            <label for="floatingPassword">Descrizione</label>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <div class="g-recaptcha col-sm-5" th:attr="data-sitekey=${@captchaSettings.getSite()}"></div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="fas fa-rocket"></i> Crea beneficiario</button>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+</form>
+</body>
+</html>
+<div th:insert="~{footer :: footerFragment}"></div>
