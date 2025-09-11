@@ -6,9 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h2 th:text="
-    'Spese per categoria' + ((dal != null or al != null) ?
-        ' (' + dal + ' → ' + al + ')' : '')">
+<h2 th:text="|Spese per categoria${(dal != null and al != null) ?
+            ' (' + #temporals.format(dal,'dd/MM/yyyy') + ' → ' +
+            #temporals.format(al,'dd/MM/yyyy') + ')' : ''}|">
 </h2>
 
 <canvas id="chart" width="640" height="360"></canvas>
