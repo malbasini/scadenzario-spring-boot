@@ -40,6 +40,7 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
+             where s.status="pagato"
             group by s.denominazione
             order by s.denominazione
            """)
@@ -52,6 +53,7 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
              from Scadenza s
             where (:dal is null or s.dataScadenza >= :dal)
               and (:al  is null or s.dataScadenza  <= :al)
+              and (s.status="pagato")
             group by s.denominazione
             order by s.denominazione
            """)
