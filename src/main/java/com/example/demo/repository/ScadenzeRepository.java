@@ -34,4 +34,43 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
     Page<Scadenza> findByDenominazione(String beneficiario, Pageable pageable);
 
     Page<Scadenza> findByDenominazioneContainingIgnoreCase(String beneficiario, Pageable pageable);
+
+    // Totali senza filtro data
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+            group by s.denominazione
+            order by s.denominazione
+           """)
+    List<CategoriaTotaleView> sumImportoByCategoria();
+
+    // Totali con filtri data opzionali (funziona in Hibernate/JPA)
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+            where (:dal is null or s.dataScadenza >= :dal)
+              and (:al  is null or s.dataScadenza  <= :al)
+            group by s.denominazione
+            order by s.denominazione
+           """)
+    List<CategoriaTotaleView> sumImportoByCategoriaBetween(
+            @Param("dal") LocalDate dal,
+            @Param("al")  LocalDate al
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

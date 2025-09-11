@@ -29,10 +29,16 @@
 <body>
 <br>
 <div class="row">
-    <div class="col-md-3">
-        <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>
+    <div class="col-md-4">
+        <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>&nbsp;&nbsp;&nbsp;
+        <!-- Nella tua pagina "lista scadenze" -->
+        <a class="btn btn-outline-primary btn-sm"
+           target="_blank"
+           th:href="@{/scadenze/grafico-categorie}">
+            <i class="fa-solid fa-chart-bar"></i>Grafico spese per categoria
+        </a>
     </div>
-    <div class="col-md-9 d-flex flex-row-reverse">
+    <div class="col-md-8 d-flex flex-row-reverse">
         <form th:action="@{/scadenze/list(page=${currentPage}, size=1, sortBy='beneficiario', sortDirection=${sortBy == 'beneficiario' and sortDirection == 'asc' ? 'desc' : 'asc'})}" method="GET">
             <div class="input-group">
                 <b style="text-align: center;">Beneficiario/Data Scadenza</b>&nbsp;&nbsp;&nbsp;<input type="text" name="beneficiario" th:value="${titleFilter}" placeholder="Cerca..." aria-label="Cerca..." aria-describedby="search-button">
