@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8"/>
-    <title>Grafico spese per categoria</title>
+    <title>Grafico spese per beneficiario</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h2 th:text="|Spese per categoria${(dal != null and al != null) ?
+<h2 th:text="|Spese per categoria${(dal != null or al != null) ?
             ' (' + #temporals.format(dal,'dd/MM/yyyy') + ' → ' +
             #temporals.format(al,'dd/MM/yyyy') + ')' : ''}|">
 </h2>

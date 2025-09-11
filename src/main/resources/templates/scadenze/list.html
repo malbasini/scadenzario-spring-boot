@@ -35,7 +35,7 @@
                 <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>
                 <br>
                 <br>
-                <div class="input-group">
+                <div class="input-group chart">
                     <!-- Nella tua pagina "lista scadenze" -->
                     <form method="get" th:action="@{/scadenze/grafico-categorie}" target="_blank">
                         <div class="input-group-append">
@@ -44,7 +44,7 @@
                             <hr>
                             <button type="submit" class="btn btn-outline-primary btn-sm">
                                 <i class="fa-solid fa-chart-bar"></i>
-                                Grafico spese per categoria
+                                Grafico spese per beneficiario
                             </button>
                         </div>
                     </form>
