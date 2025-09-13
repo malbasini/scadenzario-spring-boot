@@ -37,11 +37,11 @@
                         <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>&nbsp;&nbsp;&nbsp;
                     </div>
                     <div class="input-group-append">
-                        <a class="btn btn-outline-primary btn-sm"
-                           target="_blank"
-                           th:href="@{/scadenze/grafico-categorie}"><i class="fa-solid fa-chart-bar"></i>
-                            Grafico spese per beneficiario
-                        </a>
+                            <a class="btn btn-outline-primary btn-sm"
+                               target="_blank"
+                               th:href="@{/scadenze/grafico-categorie(filter=${titleFilter})}"><i class="fa-solid fa-chart-bar"></i>
+                                Grafico spese per beneficiario
+                            </a>
                     </div>
                 </div>
             </div>

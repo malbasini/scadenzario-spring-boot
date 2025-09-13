@@ -22,8 +22,9 @@
                 #temporals.format(al,'dd/MM/yyyy') + ')' : ''}|">
     </h1>
     <div class="toolbar">
-        <form method="get" th:action="@{/scadenze/grafico-categorie}">
-            <div class="input-group">
+        <form method="get" th:href="@{/scadenze/grafico-categorie(filter=${param.filter})}">
+
+        <div class="input-group">
                 <div class="input-group-text">
                     dal: <input type="date" name="dal" class="form-control form-control-sm" th:value="${dal}"/>
                 </div>

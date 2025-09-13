@@ -35,7 +35,7 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
 
     Page<Scadenza> findByDenominazioneContainingIgnoreCase(String beneficiario, Pageable pageable);
 
-    // Totali senza filtro data
+    // Totali senza filtro
     @Query("""
            select s.denominazione as categoria,
                   sum(s.importo) as totale
@@ -61,6 +61,71 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             @Param("dal") LocalDate dal,
             @Param("al")  LocalDate al
     );
+
+    // Totali con filtri data opzionali (funziona in Hibernate/JPA)
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+            where (:dal is null or s.dataScadenza >= :dal)
+              and (:al  is null or s.dataScadenza  <= :al)
+              and (s.status="pagato")
+              and (s.dataScadenza = :dataScadenza)
+            group by s.denominazione
+            order by s.denominazione
+           """)
+
+    List<CategoriaTotaleView> sumImportoByCategoriaAndScadenzaBetween(
+            @Param("dal") LocalDate dal,
+            @Param("al")  LocalDate al,
+            @Param("dataScadenza") LocalDate dataScadenza
+    );
+
+    // Totali senza filtro
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+             where s.status="pagato"
+             and   s.dataScadenza = :dataScadenza
+            group by s.denominazione
+            order by s.denominazione
+           """)
+    List<CategoriaTotaleView> sumImportoByCategoriaAndScadenza(@Param("dataScadenza") LocalDate dataScadenza);
+
+    // Totali con filtri data opzionali (funziona in Hibernate/JPA)
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+            where (:dal is null or s.dataScadenza >= :dal)
+              and (:al  is null or s.dataScadenza  <= :al)
+              and (s.status="pagato")
+              and (s.denominazione = :beneficiario)
+            group by s.denominazione
+            order by s.denominazione
+           """)
+
+    List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiarioBetween(
+            @Param("dal") LocalDate dal,
+            @Param("al")  LocalDate al,
+            @Param("beneficiario") String beneficiario
+    );
+
+    @Query("""
+           select s.denominazione as categoria,
+                  sum(s.importo) as totale
+             from Scadenza s
+             where s.status="pagato"
+             and   s.denominazione = :beneficiario
+            group by s.denominazione
+            order by s.denominazione
+           """)
+    List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiario(@Param("beneficiario") String beneficiario);
+
+
+
+
 
 
 

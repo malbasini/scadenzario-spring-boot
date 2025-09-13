@@ -84,6 +84,7 @@ public class ScadenzaController {
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
         model.addAttribute("message1", message1);
+        model.addAttribute("filter", beneficiario);
 
 
         return "scadenze/list";
