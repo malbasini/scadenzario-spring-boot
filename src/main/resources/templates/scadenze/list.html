@@ -32,28 +32,17 @@
     <div class="col-md-7">
         <div class="row">
             <div class="col-md-12">
-                <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>
-                <br>
-                <br>
-                <div class="input-group chart">
-                    <!-- Nella tua pagina "lista scadenze" -->
-                    <form method="get" th:action="@{/scadenze/grafico-categorie}" target="_blank">
-                            <div class="input-group-append">
-                                  <div class="input-group-text">
-                                      dal&nbsp;<input type="date" th:name="dal" class="form-control form-control-md"/>
-                                  </div>
-                                  <div class="input-group-text">
-                                      al&nbsp;<input type="date" th:name="al" class="form-control form-control-md"/>
-                                  </div>
-                                <hr>
-                                <div class="input-group-text">
-                                    <button type="submit" class="btn btn-outline-primary btn-sm">
-                                        <i class="fa-solid fa-chart-bar"></i>
-                                        Grafico spese per beneficiario
-                                    </button>
-                                </div>
-                            </div>
-                    </form>
+                <div class="input-group">
+                    <div class="input-group-append">
+                        <a class="btn btn-outline-primary btn-sm" th:href="|@{/scadenza/new}|"><i class="fas fa-plus-circle"></i>  Nuova scadenza</a>&nbsp;&nbsp;&nbsp;
+                    </div>
+                    <div class="input-group-append">
+                        <a class="btn btn-outline-primary btn-sm"
+                           target="_blank"
+                           th:href="@{/scadenze/grafico-categorie}"><i class="fa-solid fa-chart-bar"></i>
+                            Grafico spese per beneficiario
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
