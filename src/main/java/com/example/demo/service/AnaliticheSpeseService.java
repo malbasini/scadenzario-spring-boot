@@ -37,6 +37,7 @@ public class AnaliticheSpeseService {
         } else if (filter instanceof String testo) {
             // filter è una stringa
             beneficiario = testo;
+            beneficiario = "%"+beneficiario+"%";
         }
 
         if (Objects.nonNull(dataScadenza)) {

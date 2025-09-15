@@ -101,7 +101,9 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             where (:dal is null or s.dataScadenza >= :dal)
               and (:al  is null or s.dataScadenza  <= :al)
               and (s.status="pagato")
-              and (s.denominazione = :beneficiario)
+              and (s.denominazione like :beneficiario)
+              and (lower(s.denominazione) like lower(concat('%', :beneficiario, '%')))
+              and (upper(s.denominazione) like upper(concat('%', :beneficiario, '%')))
             group by s.denominazione
             order by s.denominazione
            """)
@@ -117,7 +119,9 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
                   sum(s.importo) as totale
              from Scadenza s
              where s.status="pagato"
-             and   s.denominazione = :beneficiario
+             and   s.denominazione like :beneficiario
+             and (lower(s.denominazione) like lower(concat('%', :beneficiario, '%')))
+             and (upper(s.denominazione) like upper(concat('%', :beneficiario, '%')))
             group by s.denominazione
             order by s.denominazione
            """)

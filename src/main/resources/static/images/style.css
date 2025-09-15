@@ -16,6 +16,15 @@ body>footer {
     background-color: #dfe2e6;
     width: 45%;
 }
+.jumbotron {
+    background-image: url('../images/hero.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 60%;
+}
+.jumbotron h1 {
+    font-size: 4.0rem;
+}
 
 .text-red {
     color: red;
