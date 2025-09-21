@@ -11,8 +11,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/static/**") // Consente solo le risorse statiche
-                .allowedOrigins("http://localhost:8080") // Permette solo dal dominio specificato
-                .allowedMethods("GET") // Solo richieste GET
+                .allowedOrigins("https://localhost:8443") // Permette solo dal dominio specificato
+                .allowedMethods("GET","POST")
                 .allowedHeaders("*");
     }
 

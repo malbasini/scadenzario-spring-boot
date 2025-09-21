@@ -27,35 +27,35 @@ import java.util.stream.Collectors;
 @Controller
 public class BeneficiarioController {
 
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
 
-    @Autowired
-    private CaptchaValidator captchaValidator;
+    private final SubscriptionRepository subscriptionRepository;
+    private final CaptchaValidator captchaValidator;
+    private final BeneficiarioService beneficiarioService;
+    private final UserService userService;
+    private final HtmlSanitizerService sanitizerService;
+    private final EmailService emailService;
+    private final AdminConfig adminConfig;
+    private final ScadenzeRepository scadenzeRepository;
 
-    @Autowired
-    private BeneficiarioService beneficiarioService;
+   public BeneficiarioController(SubscriptionRepository subscriptionRepository,
+                                 CaptchaValidator captchaValidator,
+                                 BeneficiarioService beneficiarioService,
+                                 UserService userService,
+                                 HtmlSanitizerService sanitizerService,
+                                 EmailService emailService,
+                                 AdminConfig adminConfig,
+                                 ScadenzeRepository scadenzeRepository) {
 
-    @Autowired
-    private UserService userService;
+        this.subscriptionRepository = subscriptionRepository;
+        this.captchaValidator = captchaValidator;
+        this.beneficiarioService = beneficiarioService;
+        this.userService = userService;
+        this.sanitizerService = sanitizerService;
+        this.emailService = emailService;
+        this.adminConfig = adminConfig;
+        this.scadenzeRepository = scadenzeRepository;
+    }
 
-    @Autowired
-    private HtmlSanitizerService sanitizerService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private AdminConfig adminConfig;
-    @Autowired
-    private ScadenzaService scadenzaService;
-    @Autowired
-    private BeneficiariRepository beneficiariRepository;
-    @Autowired
-    private ScadenzeRepository scadenzeRepository;
-
-
-    // GET /courses -> listing di tutti i corsi con supporto a paginazione, ricerca e ordinamento
     @GetMapping("/beneficiari/list")
     public String listBeneficiari(
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
@@ -72,12 +72,9 @@ public class BeneficiarioController {
         Register user = userService.loadRegisterByUsername(loggedUsername);
         // Ottenere i beneficiari con paginazione, ricerca e ordinamento
         Page<Beneficiario> beneficiari = beneficiarioService.findBeneficiari(page, size, beneficiario, sortBy, sortDirection);
-
-
         model.addAttribute("beneficiari", beneficiari.getContent().stream()
                 .filter(b -> b.getUser().getId().equals(user.getId()))
                 .collect(Collectors.toList()));
-
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", beneficiari.getTotalPages());
         model.addAttribute("titleFilter", beneficiario);
@@ -85,7 +82,6 @@ public class BeneficiarioController {
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
         model.addAttribute("message1", message1);
-
         return "beneficiari/list";
     }
     @GetMapping("/beneficiario/new")
@@ -94,12 +90,14 @@ public class BeneficiarioController {
         model.addAttribute("beneficiario", beneficiario);
         return "beneficiari/create";
     }
+
     @PostMapping("/beneficiario/create")
     public String create(@RequestParam("g-recaptcha-response") String captchaResponse,
                          @RequestParam String denominazione,
                          @RequestParam String description,
                          Principal principal,
                          Model model) {
+
         denominazione = sanitizerService.sanitize(denominazione);
         description = sanitizerService.sanitize(description);
         String username = principal.getName();  // lo username loggato
@@ -150,16 +148,16 @@ public class BeneficiarioController {
         model.addAttribute("description", description);
     }
 
-
     @GetMapping(value = "/{id}/detail")
     public String beneficiariDetail(@PathVariable Integer id,
                                @RequestParam(name = "message", required = false) String message,
                                @RequestParam(name = "message1", required = false) String message1,
                                Model model,
                                Principal principal) {
-        Beneficiario beneficiario = beneficiarioService.findById(id);
+
+       Beneficiario beneficiario = beneficiarioService.findById(id);
         if (beneficiario == null) {
-            return "security/access-denied";// Gestione caso corso non trovato
+            return "security/access-denied";
         }
         boolean isAdmin = false;
         // L'utente loggato
@@ -184,6 +182,7 @@ public class BeneficiarioController {
                              @RequestParam(name = "message1", required = false) String message1,
                              Model model,
                              Principal principal) {
+
         Beneficiario beneficiario = beneficiarioService.findById(id);
         if (beneficiario == null) {
             // gestisci errore se non trovato
@@ -195,7 +194,6 @@ public class BeneficiarioController {
         else
         {
             String loggedUsername = principal.getName();
-            Register user = userService.loadRegisterByUsername(loggedUsername);
             boolean isOwner = (beneficiario.getUser().getUsername().equals(loggedUsername));
             model.addAttribute("isOwner", isOwner);
             model.addAttribute("beneficiarioForm", beneficiario);
@@ -205,7 +203,7 @@ public class BeneficiarioController {
             return "beneficiari/edit";
         }
     }
-    // POST /courses/{id} -> aggiorna un corso esistente
+
     @GetMapping(path = "/{idBeneficiario}/update")
     public String updateBeneficiario(@PathVariable("idBeneficiario") Integer idBeneficiario,
                                      @RequestParam("denominazione") String denominazione,
@@ -277,12 +275,10 @@ public class BeneficiarioController {
         String loggedUsername = principal.getName(); // es: "mario rossi"
         // Verifico se il proprietario è lo stesso che ha fatto la login
         boolean isOwner = beneficiario.getUser().getUsername().equals(loggedUsername);
-        Register user = userService.loadRegisterByUsername(loggedUsername);
         if (!isOwner) {
             // se non sei il proprietario, redirect o errore
             return "security/access-denied";
         }
-
         Beneficiario b = scadenzeRepository.findBeneficiarioById(id);
         List<Scadenza> scadenze = b.getScadenze();
         for(Scadenza scadenza : scadenze) {
@@ -294,7 +290,6 @@ public class BeneficiarioController {
         beneficiarioService.deleteById(id);
         return "redirect:/" + id + "/" + denominazione + "/infobeneficiario";
     }
-
 
     @GetMapping("/{id}/{denominazione}/infobeneficiario")
     public String infoAdmin(@PathVariable("id") Integer id,
@@ -311,23 +306,4 @@ public class BeneficiarioController {
         }
         return "redirect:/beneficiari/list?message=Beneficiario eliminato con successo ed email all'amministratore inviata correttamente!";
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

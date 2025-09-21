@@ -38,17 +38,19 @@ public class ScadenzaController {
     @Autowired
     private HtmlSanitizerService sanitizerService;
 
-    @Autowired
-    private EmailService emailService;
 
-    @Autowired
-    private AdminConfig adminConfig;
-    @Autowired
-    private SubscriptionService subscriptionService;
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private final EmailService emailService;
+    private final AdminConfig adminConfig;
+    private final SubscriptionRepository subscriptionRepository;
 
+    public ScadenzaController(EmailService emailService,
+                              AdminConfig adminConfig,
+                              SubscriptionRepository subscriptionRepository) {
 
+        this.emailService = emailService;
+        this.adminConfig = adminConfig;
+        this.subscriptionRepository = subscriptionRepository;
+    }
     @GetMapping("/scadenze/list")
     public String listScadenze(
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
@@ -247,7 +249,7 @@ public class ScadenzaController {
         Scadenza scadenza = scadenzaService.findById(id);
         Subscription s = subscriptionRepository.findByScadenza(scadenza);
         if (s != null) {
-            return "redirect:/scadenze/list?message1=La scadenza risulta pagata. Impossibile cancellarla!";
+            return "redirect:/scadenze/list?message1=La scadenza risulta pagata. Impossibile cancellarla.";
         }
         String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         String loggedUsername = principal.getName(); // es: "mario rossi"
@@ -303,11 +305,11 @@ public class ScadenzaController {
               emailService.sendSimpleEmail(
                       adminConfig.getEmail(),
                       "Eliminazione Scadenza",
-                      "La scadenza con identificativo " + id + " in scadenza il " + dataScadenza + " è stata eliminata!"
+                      "La scadenza con identificativo " + id + " in scadenza il " + dataScadenza + " è stata eliminata."
               );
           } catch (Exception e) {
               return "redirect:/scadenze/list?message=Errore invio email all'amministratore: ! " + e.getMessage();
           }
-          return "redirect:/scadenze/list?message=Scadenza eliminata con successo ed email all'amministratore inviata correttamente!";
+          return "redirect:/scadenze/list?message=Scadenza eliminata con successo ed email all'amministratore inviata correttamente.";
     }
 }

@@ -20,6 +20,7 @@ public class Register {
     @Column(name="email", unique = true, length = 100)
     private String email;
     private boolean enabled;
+
     @OneToMany(mappedBy = "beneficiario")
     private List<Beneficiario> beneficiari;
 

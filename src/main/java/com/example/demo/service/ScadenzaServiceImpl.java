@@ -17,19 +17,21 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 @Service
+@Transactional
 public class ScadenzaServiceImpl implements ScadenzaService {
 
-    @Autowired
-    private ScadenzeRepository scadenzeRepository;
+
+    private final ScadenzeRepository scadenzeRepository;
+
+    public ScadenzaServiceImpl(ScadenzeRepository scadenzeRepository) {
+        this.scadenzeRepository = scadenzeRepository;
+    }
 
     @Override
     public Scadenza save(Scadenza scadenza) {
         return scadenzeRepository.save(scadenza);
     }
-    @Override
-    public List<Scadenza> findAll() {
-        return scadenzeRepository.findAll();
-    }
+
     @Override
     public Scadenza findById(Integer id) {
         return scadenzeRepository.findById(id).orElseThrow(() -> new RuntimeException("Scadenza not found with ID: " + id));
@@ -38,11 +40,12 @@ public class ScadenzaServiceImpl implements ScadenzaService {
     public void deleteById(Integer id) {
         scadenzeRepository.deleteById(id);
     }
+
     @Override
     public Scadenza update(Scadenza scadenza) {
         return scadenzeRepository.save(scadenza);
     }
-    @Transactional
+
     public Page<Scadenza> findScadenze(int page, int size, String beneficiario, String sortBy, String sortDirection) {
         Sort sort = Sort.by(sortBy);
         sort = sortDirection.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
@@ -65,22 +68,18 @@ public class ScadenzaServiceImpl implements ScadenzaService {
         else
             return scadenzeRepository.findAll(pageable);
     }
-    @Transactional
+
     public Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user){
         Beneficiario b = scadenzeRepository.findByBeneficiarioAndIdUser(beneficiario,user.getId());
         return b;
     }
-    @Transactional
+
     public List<Beneficiario> findBeneficiariByIdUser(Integer id){
         return scadenzeRepository.findBeneficiariByIdUser(id);
     }
 
-    @Transactional
     public Beneficiario findByIdScadenza(Integer id){
         Scadenza scadenza = scadenzeRepository.findById(id).orElseThrow(() -> new RuntimeException("Scadenza not found with ID: " + id));
         return scadenza.getBeneficiario();
     }
-
-
-
 }

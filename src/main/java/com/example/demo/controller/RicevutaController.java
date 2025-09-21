@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-
 import com.example.demo.model.Ricevuta;
 import com.example.demo.service.RicevutaService;
 import java.util.Optional;
@@ -15,11 +14,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping
 public class RicevutaController {
 
-    @Autowired
-    private RicevutaService ricevutaService;
+    private final RicevutaService ricevutaService;
+    private final ScadenzaService scadenzaService;
 
-    @Autowired
-    private ScadenzaService scadenzaService;
+    public RicevutaController(RicevutaService ricevutaService, ScadenzaService scadenzaService) {
+        this.ricevutaService = ricevutaService;
+        this.scadenzaService = scadenzaService;
+    }
 
     @PostMapping("/deletericevuta")
     public String deleteRicevuta(@RequestParam("id") Integer id)
@@ -56,8 +57,7 @@ public class RicevutaController {
             fileEntity.setScadenza(scadenzaService.findById(id));
             // Salva l'entità nel database
             ricevutaService.save(fileEntity);
-
-            return ResponseEntity.ok("File salvato con successo nel database. Ricaricare la pagina per visualizzare il file!");
+            return ResponseEntity.ok("File salvato con successo nel database. Ricaricare la pagina per visualizzare il file.");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Errore durante il salvataggio del file.");

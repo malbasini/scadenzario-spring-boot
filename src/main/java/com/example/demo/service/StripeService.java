@@ -13,9 +13,12 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class StripeService {
 
-    @Autowired
-    private SubscriptionService subscriptionService;
 
+    private final SubscriptionService subscriptionService;
+
+    public StripeService(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
     /**
      * Esempio di metodo per finalizzare il pagamento
      * (se usi i Webhook, puoi spostare questa logica lì).

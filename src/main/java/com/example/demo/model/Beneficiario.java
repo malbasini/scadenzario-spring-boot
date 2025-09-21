@@ -50,7 +50,6 @@ public class Beneficiario {
         this.beneficiario = beneficiario;
     }
 
-
     public String getEmail() {
         return email;
     }

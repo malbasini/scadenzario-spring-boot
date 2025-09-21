@@ -24,7 +24,6 @@ public class Ricevuta {
     @JoinColumn(name = "scadenza_id")
     private Scadenza scadenza;
 
-
     public Integer getId() {
         return Id;
     }

@@ -65,10 +65,10 @@ public class Scadenza {
         return 0;
     }
 
-
     public String getImportoFormattato() {
         return importoFormattato;
     }
+
     public void setImportoFormattato(BigDecimal importo) {
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
         String formattedImporto = currencyFormatter.format(importo);
@@ -142,6 +142,7 @@ public class Scadenza {
     public String getDataScadenzaFormattata() {
         return dataScadenzaFormattata;
     }
+
     public void setDataScadenzaFormattata(LocalDate dataScadenzaFormattata) {
         String formattedDate = getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         this.dataScadenzaFormattata = formattedDate;

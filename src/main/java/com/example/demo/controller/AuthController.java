@@ -11,20 +11,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 import java.util.Locale;
 
 @Controller
 public class AuthController {
-    @Autowired
+
     BCryptPasswordEncoder passwordEncoder;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private RolesRepository roleRepository;
-    @Autowired
-    private CaptchaValidator captchaValidator;
+    private final UserService userService;
+    private final RolesRepository roleRepository;
+    private final CaptchaValidator captchaValidator;
+
+    public AuthController(BCryptPasswordEncoder passwordEncoder,
+                          UserService userService,
+                          RolesRepository roleRepository,
+                          CaptchaValidator captchaValidator) {
+        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
+        this.roleRepository = roleRepository;
+        this.captchaValidator = captchaValidator;
+    }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logoutPage()
@@ -36,38 +41,36 @@ public class AuthController {
     {
         Register userForm = new Register();
         model.addAttribute("userForm",userForm);
-        return "security/login"; // restituisce la JSP login.html
+        return "security/login"; // restituisce login.html
     }
     @RequestMapping(value = "/doLogin", method = RequestMethod.POST)
     public String doLogin(@ModelAttribute("userForm") Register userForm,
                           Model model) {
-        model.addAttribute("username",userForm.getUsername());
+        model.addAttribute("username", userForm.getUsername());
         boolean isAuthenticated;
         Register user = null;
         try {
             user = userService.loadRegisterByUsername(userForm.getUsername());
         } catch (Exception e) {
-            model.addAttribute("errore","I dati inseriti non sono corretti");
-            return "security/login"; // restituisce la JSP login.html
+            model.addAttribute("errore", "I dati inseriti non sono corretti");
+            return "security/login"; // restituisce login.html
         }
-        if(user.getUsername().equals(userForm.getUsername()) && passwordEncoder.matches(userForm.getPassword(), user.getPassword()))
-        {
+        if (user.getUsername().equals(userForm.getUsername()) && passwordEncoder.matches(userForm.getPassword(), user.getPassword())) {
             isAuthenticated = true;
-            model.addAttribute("username",userForm.getUsername());
-            model.addAttribute("isAuthenticated",isAuthenticated);
+            model.addAttribute("username", userForm.getUsername());
+            model.addAttribute("isAuthenticated", isAuthenticated);
             return "redirect:/";
         }
-        model.addAttribute("errore","I dati inseriti non sono corretti");
+        model.addAttribute("errore", "I dati inseriti non sono corretti");
         return "security/login"; // restituisce la JSP login.html
     }
-
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String showRegisterPage(Model model,
                                   HttpServletRequest request) {
 
         model.addAttribute("contextPath", request.getContextPath());
-        return "security/register"; // restituisce la JSP register.html
+        return "security/register"; // restituisce register.html
     }
     @RequestMapping(value = "/doRegister", method = RequestMethod.POST)
     public String doRegister(

@@ -2,25 +2,25 @@ package com.example.demo.service;
 import com.example.demo.model.Scadenza;
 import com.example.demo.model.Subscription;
 import com.example.demo.model.Register;
-import com.example.demo.repository.SubscriptionRepository;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 
 @Service
 public class PayPalService {
-    @Autowired
-    private APIContext apiContext; // Iniettato da PayPalConfig
-    @Autowired
-    private SubscriptionService subscriptionService;
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
 
+    private final APIContext apiContext; // Iniettato da PayPalConfig
+    private final SubscriptionService subscriptionService;
+
+    public PayPalService(APIContext apiContext,
+                         SubscriptionService subscriptionService) {
+
+        this.apiContext = apiContext;
+        this.subscriptionService = subscriptionService;
+    }
     /**
      * Crea il pagamento su PayPal e restituisce l'approvalLink per il redirect.
      */

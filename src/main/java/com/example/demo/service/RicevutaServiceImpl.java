@@ -2,23 +2,23 @@ package com.example.demo.service;
 
 import com.example.demo.model.Ricevuta;
 import com.example.demo.repository.RicevuteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class RicevutaServiceImpl implements RicevutaService {
 
-    @Autowired
-    private RicevuteRepository ricevuteRepository;
+    private final RicevuteRepository ricevuteRepository;
 
+    public RicevutaServiceImpl(RicevuteRepository ricevuteRepository) {
+        this.ricevuteRepository = ricevuteRepository;
+    }
 
     public Ricevuta save(Ricevuta ricevuta) {
         return ricevuteRepository.save(ricevuta);
-    }
-    public List<Ricevuta> findAll() {
-        return ricevuteRepository.findAll();
     }
     public Ricevuta findById(Integer id) {
         return ricevuteRepository.findById(id).orElseThrow();

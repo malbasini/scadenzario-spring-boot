@@ -18,12 +18,21 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/stripe")
 public class StripeController {
-    @Autowired
-    private StripeService stripeService;
-    @Autowired
-    private ScadenzaService scadenzaService;
-    @Autowired
-    private UserRepository userRepository;
+
+    private final StripeService stripeService;
+    private final ScadenzaService scadenzaService;
+    private final UserRepository userRepository;
+
+    public StripeController(StripeService stripeService,
+                            ScadenzaService scadenzaService,
+                            UserRepository userRepository) {
+
+        this.stripeService = stripeService;
+        this.scadenzaService = scadenzaService;
+        this.userRepository = userRepository;
+    }
+
+
     @GetMapping("/{scadenzaId}/checkout")
     public String startCheckout(@PathVariable("scadenzaId") Integer scadenzaId,
                                 Principal principal,
@@ -49,12 +58,13 @@ public class StripeController {
             return "stripe/error";
         }
     }
+
     @GetMapping("/success")
     public String success(@RequestParam("session_id") String sessionId,
                           Model model,
                           HttpSession httpSession) {
         try {
-            Subscription subscription = stripeService.handleCheckoutSession(sessionId,httpSession);
+            Subscription subscription = stripeService.handleCheckoutSession(sessionId, httpSession);
             if (subscription != null) {
                 //AGGIORNO LA DATA PAGMENTO E LO STATUS DELLA SCADENZA
                 int scadenzaId = (int) httpSession.getAttribute("scadenzaId");
@@ -71,18 +81,10 @@ public class StripeController {
         }
         return "stripe/error";
     }
+
     @GetMapping("/cancel")
     public String cancel() {
-       //Gestisce il pagamento annullato
+        //Gestisce il pagamento annullato
         return "stripe/paymentcancelled";
     }
-/*
- * Esempio (opzionale) di endpoint Webhook se vuoi gestire in automatico
- * la conferma del pagamento Stripe, invece di passare da /success.
- */
-// @PostMapping("/webhook")
-// public ResponseEntity<String> handleStripeWebhook(HttpServletRequestrequest) {
-// // Leggi e valida l'evento (Stripe-Signature) e aggiorna DB diconseguenza
-// return ResponseEntity.ok("ok");
-// }
 }

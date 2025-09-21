@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +19,6 @@ public class AnaliticheSpeseController {
     public AnaliticheSpeseController(AnaliticheSpeseService analiticheSpeseService) {
         this.analiticheSpeseService = analiticheSpeseService;
     }
-
     // Pagina HTML con grafico (Thymeleaf: templates/scadenze/grafico-categorie.html)
     @GetMapping({"/scadenze/grafico-categorie"})
     public String graficoCategorie(
@@ -42,16 +40,5 @@ public class AnaliticheSpeseController {
         model.addAttribute("filter", filter);
 
         return "scadenze/grafico-categorie";
-    }
-
-    // API JSON se vuoi consumare via fetch/Chart.js
-    @GetMapping("/api/scadenze/spese-per-categoria")
-    @ResponseBody
-    public ResponseEntity<List<CategoriaTotaleDTO>> spesePerCategoriaApi(
-            @RequestParam(required = false) LocalDate dal,
-            @RequestParam(required = false) LocalDate al,
-            @RequestParam(required = false) Object beneficiario
-    ) {
-        return ResponseEntity.ok(analiticheSpeseService.getTotaliPerCategoria(dal, al, beneficiario));
     }
 }

@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CaptchaValidator {
-    @Autowired
-    private CaptchaSettings captchaSettings;
 
+    private final CaptchaSettings captchaSettings;
     private static final String GOOGLE_URL = "https://www.google.com/recaptcha/api/siteverify";
 
+    public CaptchaValidator(CaptchaSettings captchaSettings) {
+        this.captchaSettings = captchaSettings;
+    }
     public static String getGoogleUrl() {
         return GOOGLE_URL;
     }
@@ -28,16 +30,13 @@ public class CaptchaValidator {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true); // Necessario per inviare dati nel body
-
             // Parametri da inviare nel body
             String params = "secret=" + captchaSettings.getSecret() + "&response=" + responseToken;
-
             // Scrivo i dati nel body della richiesta
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(params.getBytes());
                 os.flush();
             }
-
             // Leggo la risposta di Google
             InputStreamReader reader = new InputStreamReader(conn.getInputStream());
             StringBuilder responseBuilder = new StringBuilder();
@@ -45,7 +44,6 @@ public class CaptchaValidator {
             while ((character = reader.read()) != -1) {
                 responseBuilder.append((char) character);
             }
-
             // Analizzo la risposta JSON
             JSONObject jsonResponse = new JSONObject(responseBuilder.toString());
             return jsonResponse.getBoolean("success");

@@ -24,12 +24,20 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/paypal")
 public class PayPalController {
-    @Autowired
-    private PayPalService payPalService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ScadenzaService scadenzaService;
+
+    private final PayPalService payPalService;
+    private final UserRepository userRepository;
+    private final ScadenzaService scadenzaService;
+
+    public PayPalController(PayPalService payPalService,
+                            UserRepository userRepository,
+                            ScadenzaService scadenzaService) {
+
+        this.payPalService = payPalService;
+        this.userRepository = userRepository;
+        this.scadenzaService = scadenzaService;
+    }
+
     // Esempio di rotta per avviare il pagamento
     @GetMapping("/{scadenzaId}/pay")
     public String payWithPayPal(@PathVariable("scadenzaId") Integer scadenzaId,
@@ -78,7 +86,7 @@ public class PayPalController {
             Subscription subscription = payPalService.executePayment(paymentId, payerId, httpSession);
             if (subscription != null) {
                 // Pagamento completato con successo:
-                // mostra una pagina di conferma, ad es. "paymentSuccess.jsp"
+                // mostra una pagina di conferma, ad es. "paymentSuccess"
                 model.addAttribute("subscription", subscription);
                 //AGGIORNO LA DATA PAGMENTO E LO STATUS DELLA SCADENZA
                 int scadenzaId = (int) httpSession.getAttribute("scadenzaId");

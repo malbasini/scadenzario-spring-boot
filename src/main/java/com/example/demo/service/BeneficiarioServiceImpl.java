@@ -4,6 +4,7 @@ import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Register;
 import com.example.demo.repository.BeneficiariRepository;
 import com.example.demo.repository.RolesRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,19 +14,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Transactional
 public class BeneficiarioServiceImpl implements BeneficiarioService {
-    @Autowired
-    private BeneficiariRepository beneficiariRepository;
-    @Autowired
-    private RolesRepository rolesRepository;
+
+    private final BeneficiariRepository beneficiariRepository;
+
+    public BeneficiarioServiceImpl(BeneficiariRepository beneficiariRepository) {
+        this.beneficiariRepository = beneficiariRepository;
+    }
 
     @Override
     public Beneficiario save(Beneficiario beneficiario) {
         return beneficiariRepository.save(beneficiario);
-    }
-    @Override
-    public List<Beneficiario> findAll() {
-        return beneficiariRepository.findAll();
     }
 
     @Override
@@ -36,6 +36,7 @@ public class BeneficiarioServiceImpl implements BeneficiarioService {
     public Beneficiario findById(int id) {
         return beneficiariRepository.findById(id).orElseThrow();
     }
+
     @Override
     public Beneficiario update(Beneficiario beneficiario) {
         return beneficiariRepository.save(beneficiario);

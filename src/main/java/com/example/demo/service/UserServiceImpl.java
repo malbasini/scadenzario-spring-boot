@@ -14,27 +14,23 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService{
-    @Autowired
-    BCryptPasswordEncoder passwordEncoder;
-    @Autowired
-    private RolesRepository roleRepository;
-    @Autowired
-    private UserRepository userRepository;
 
+    BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(UserRepository userRepository,
+                           BCryptPasswordEncoder passwordEncoder) {
+
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
     public void registerNewUser(Register user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
-    public List<Ruolo> getAllRole()
-    {
-        return roleRepository.findAll();
-    }
-    public Register login(String userName) {
-        Register user = userRepository.findByUsername(userName);
-        if (user == null)
-            throw new IllegalArgumentException("Invalid User Name");
-        return user;
-    }
+    @Override
     public Register loadRegisterByUsername(String username) {
         return userRepository.findByUsernameWithRoles(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Utente non trovato: " + username));

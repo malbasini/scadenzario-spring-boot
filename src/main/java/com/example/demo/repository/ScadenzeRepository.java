@@ -15,24 +15,13 @@ import java.util.List;
 public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
 
     Page<Scadenza> findByBeneficiarioContainsIgnoreCase(String denominazione, Pageable pageable);
-
-    @Transactional
     @Query("SELECT b FROM Beneficiario b WHERE b.beneficiario = :denominazione AND b.user.id=:id")
     Beneficiario findByBeneficiarioAndIdUser(@Param("denominazione") String denominazione, @Param("id") Integer id);
-
-    @Transactional
     @Query("SELECT b FROM Beneficiario b WHERE b.user.id=:id")
     List<Beneficiario> findBeneficiariByIdUser(@Param("id") Integer id);
-
     @Query("SELECT b FROM Beneficiario b WHERE b.Id = :id")
     Beneficiario findBeneficiarioById(@Param("id") Integer id);
-
-    Page<Scadenza> findByDataScadenzaContainsIgnoreCase(LocalDate data, Pageable pageable);
-
     Page<Scadenza> findByDataScadenza(LocalDate data, Pageable pageable);
-
-    Page<Scadenza> findByDenominazione(String beneficiario, Pageable pageable);
-
     Page<Scadenza> findByDenominazioneContainingIgnoreCase(String beneficiario, Pageable pageable);
 
     // Totali senza filtro
@@ -45,7 +34,6 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             order by s.denominazione
            """)
     List<CategoriaTotaleView> sumImportoByCategoria();
-
     // Totali con filtri data opzionali (funziona in Hibernate/JPA)
     @Query("""
            select s.denominazione as categoria,
@@ -80,7 +68,6 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             @Param("al")  LocalDate al,
             @Param("dataScadenza") LocalDate dataScadenza
     );
-
     // Totali senza filtro
     @Query("""
            select s.denominazione as categoria,
@@ -107,13 +94,11 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             group by s.denominazione
             order by s.denominazione
            """)
-
     List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiarioBetween(
             @Param("dal") LocalDate dal,
             @Param("al")  LocalDate al,
             @Param("beneficiario") String beneficiario
     );
-
     @Query("""
            select s.denominazione as categoria,
                   sum(s.importo) as totale
@@ -126,22 +111,4 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
             order by s.denominazione
            """)
     List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiario(@Param("beneficiario") String beneficiario);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

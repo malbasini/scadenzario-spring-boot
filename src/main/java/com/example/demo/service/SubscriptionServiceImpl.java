@@ -7,6 +7,7 @@ import com.example.demo.repository.ScadenzeRepository;
 
 import com.example.demo.repository.SubscriptionRepository;
 import com.example.demo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +17,22 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Service
+@Transactional
 public class SubscriptionServiceImpl implements SubscriptionService {
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ScadenzeRepository scadenzaRepository;
 
+    private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
+    private final ScadenzeRepository scadenzaRepository;
+
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository,
+                                   UserRepository userRepository,
+                                   ScadenzeRepository scadenzaRepository
+                                   ){
+
+        this.subscriptionRepository = subscriptionRepository;
+        this.userRepository = userRepository;
+        this.scadenzaRepository = scadenzaRepository;
+    }
     @Override
     public void save(Subscription subscription) {
         subscriptionRepository.save(subscription);

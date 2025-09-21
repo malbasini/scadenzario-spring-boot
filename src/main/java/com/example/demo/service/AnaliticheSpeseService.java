@@ -3,14 +3,15 @@ package com.example.demo.service;
 import com.example.demo.dto.CategoriaTotaleDTO;
 import com.example.demo.repository.CategoriaTotaleView;
 import com.example.demo.repository.ScadenzeRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@Transactional
 public class AnaliticheSpeseService {
 
     private final ScadenzeRepository scadenzaRepository;

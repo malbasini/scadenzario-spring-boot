@@ -1,9 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Scadenza;
 import com.example.demo.model.Subscription;
-import com.example.demo.model.Register;
-
 import java.math.BigDecimal;
 
 public interface SubscriptionService {

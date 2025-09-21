@@ -9,15 +9,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-    @Autowired
-    private AdminConfig adminConfig;
+    private final JavaMailSender mailSender;
+    private final AdminConfig adminConfig;
+
+    public EmailService(JavaMailSender mailSender,
+                        AdminConfig adminConfig) {
+
+        this.mailSender = mailSender;
+        this.adminConfig = adminConfig;
+    }
 
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         try {
-            message.setFrom("no-reply@localhost");
+            message.setFrom("no-reply@scadenzario");
             message.setTo(adminConfig.getEmail());
             message.setSubject(subject);
             message.setText(text);
