@@ -2,7 +2,6 @@ package com.example.demo.repository;
 
 import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Scadenza;
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,28 +29,35 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
                   sum(s.importo) as totale
              from Scadenza s
              where s.status="pagato"
+            and   function('year', s.dataScadenza) = :anno
             group by s.denominazione
-            order by s.denominazione
            """)
-    List<CategoriaTotaleView> sumImportoByCategoria();
+    List<CategoriaTotaleView> sumImportoByCategoria(@Param("anno") Integer anno);
     // Totali con filtri data opzionali (funziona in Hibernate/JPA)
-    @Query("""
+    @Query(value = """
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
             where (:dal is null or s.dataScadenza >= :dal)
               and (:al  is null or s.dataScadenza  <= :al)
               and (s.status="pagato")
+              and   function('year', s.dataScadenza) = :anno
             group by s.denominazione
-            order by s.denominazione
-           """)
+           """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """
+    )
     List<CategoriaTotaleView> sumImportoByCategoriaBetween(
             @Param("dal") LocalDate dal,
-            @Param("al")  LocalDate al
+            @Param("al")  LocalDate al,
+            @Param("anno") Integer anno
     );
 
     // Totali con filtri data opzionali (funziona in Hibernate/JPA)
-    @Query("""
+    @Query(value = """
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
@@ -59,29 +65,43 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
               and (:al  is null or s.dataScadenza  <= :al)
               and (s.status="pagato")
               and (s.dataScadenza = :dataScadenza)
+              and   function('year', s.dataScadenza) = :anno
             group by s.denominazione
-            order by s.denominazione
-           """)
+           """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """)
 
     List<CategoriaTotaleView> sumImportoByCategoriaAndScadenzaBetween(
             @Param("dal") LocalDate dal,
             @Param("al")  LocalDate al,
-            @Param("dataScadenza") LocalDate dataScadenza
+            @Param("dataScadenza") LocalDate dataScadenza,
+            @Param("anno") Integer anno
     );
     // Totali senza filtro
-    @Query("""
+    @Query(value = """
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
              where s.status="pagato"
              and   s.dataScadenza = :dataScadenza
+             and   function('year', s.dataScadenza) = :anno
             group by s.denominazione
-            order by s.denominazione
-           """)
-    List<CategoriaTotaleView> sumImportoByCategoriaAndScadenza(@Param("dataScadenza") LocalDate dataScadenza);
+           """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """
+    )
+    List<CategoriaTotaleView> sumImportoByCategoriaAndScadenza(
+            @Param("dataScadenza") LocalDate dataScadenza,
+            @Param("anno") Integer anno);
 
     // Totali con filtri data opzionali (funziona in Hibernate/JPA)
-    @Query("""
+    @Query(value = """
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
@@ -89,26 +109,105 @@ public interface ScadenzeRepository extends JpaRepository<Scadenza,Integer> {
               and (:al  is null or s.dataScadenza  <= :al)
               and (s.status="pagato")
               and (s.denominazione like :beneficiario)
-              and (lower(s.denominazione) like lower(concat('%', :beneficiario, '%')))
-              and (upper(s.denominazione) like upper(concat('%', :beneficiario, '%')))
+              and   function('year', s.dataScadenza) = :anno
             group by s.denominazione
-            order by s.denominazione
-           """)
+           """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """
+    )
     List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiarioBetween(
             @Param("dal") LocalDate dal,
             @Param("al")  LocalDate al,
-            @Param("beneficiario") String beneficiario
+            @Param("beneficiario") String beneficiario,
+            @Param("anno") Integer anno
     );
-    @Query("""
+    @Query(value = """
            select s.denominazione as categoria,
                   sum(s.importo) as totale
              from Scadenza s
              where s.status="pagato"
              and   s.denominazione like :beneficiario
-             and (lower(s.denominazione) like lower(concat('%', :beneficiario, '%')))
-             and (upper(s.denominazione) like upper(concat('%', :beneficiario, '%')))
+             and   function('year', s.dataScadenza) = :anno
+            group by s.denominazione
+           """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """
+    )
+
+    List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiario(
+            @Param("beneficiario") String beneficiario,
+            @Param("anno") Integer anno);
+
+
+    // 📅 Anni distinti dal campo data (ordina desc). Esclude null.
+    @Query("""
+           select distinct function('year', s.dataScadenza)
+             from Scadenza s
+            where s.dataScadenza is not null
+            order by function('year', s.dataScadenza) desc
+           """)
+    List<Integer> findDistinctYears();
+
+    // 📜 Lista scadenze di un anno specifico (paginata)
+    @Query(value = """
+          select s
+            from Scadenza s
+            where function('year', s.dataScadenza) = :anno
+            and (s.dataScadenza=:data)
+          """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """)
+    Page<Scadenza> findAllByYearAndData(@Param("anno") Integer anno,
+                                        @Param("data") LocalDate data,
+                                        Pageable pageable);
+
+    // 📜 Lista scadenze di un anno specifico (paginata)
+    @Query(value = """
+          select s
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+           and s.denominazione=:denominazione
+          """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """)
+    Page<Scadenza> findAllByYearAndBeneficiario(@Param("anno") Integer anno,
+                                                @Param("denominazione") String denominazione,
+                                                Pageable pageable);
+    // 📜 Lista scadenze di un anno specifico (paginata)
+    @Query(
+            value = """
+          select s
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """,
+            countQuery = """
+          select count(s)
+            from Scadenza s
+           where function('year', s.dataScadenza) = :anno
+          """
+    )
+    Page<Scadenza> findAllByYear(@Param("anno") Integer anno, Pageable pageable);
+
+    // 📊 Totali per categoria in un anno
+    @Query("""
+           select s.denominazione as categoria, sum(s.importo) as totale
+             from Scadenza s
+            where function('year', s.dataScadenza) = :anno
             group by s.denominazione
             order by s.denominazione
            """)
-    List<CategoriaTotaleView> sumImportoByCategoriaAndBeneficiario(@Param("beneficiario") String beneficiario);
+    List<CategoriaTotaleView> sumImportoByCategoriaForYear(@Param("anno") Integer anno);
 }
+

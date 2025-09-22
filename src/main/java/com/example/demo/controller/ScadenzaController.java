@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.config.AdminConfig;
+import com.example.demo.dto.CategoriaTotaleDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.SubscriptionRepository;
 import com.example.demo.service.*;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.text.NumberFormat;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -23,36 +25,41 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping()
 public class ScadenzaController {
-    @Autowired
-    private CaptchaValidator captchaValidator;
 
-    @Autowired
-    private ScadenzaService scadenzaService;
-
-    @Autowired
-    private RicevutaService ricevutaService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private HtmlSanitizerService sanitizerService;
-
-
+    private final CaptchaValidator captchaValidator;
+    private final ScadenzaService scadenzaService;
+    private final RicevutaService ricevutaService;
+    private final UserService userService;
+    private final HtmlSanitizerService sanitizerService;
     private final EmailService emailService;
     private final AdminConfig adminConfig;
     private final SubscriptionRepository subscriptionRepository;
+    private final AnaliticheSpeseService analiticheSpeseService;
 
     public ScadenzaController(EmailService emailService,
                               AdminConfig adminConfig,
-                              SubscriptionRepository subscriptionRepository) {
+                              SubscriptionRepository subscriptionRepository,
+                              CaptchaValidator captchaValidator,
+                              ScadenzaService scadenzaService,
+                              RicevutaService ricevutaService,
+                              UserService userService,
+                              HtmlSanitizerService sanitizerService,
+                              AnaliticheSpeseService analiticheSpeseService) {
 
         this.emailService = emailService;
         this.adminConfig = adminConfig;
         this.subscriptionRepository = subscriptionRepository;
+        this.captchaValidator = captchaValidator;
+        this.scadenzaService = scadenzaService;
+        this.ricevutaService = ricevutaService;
+        this.userService = userService;
+        this.sanitizerService = sanitizerService;
+        this.analiticheSpeseService = analiticheSpeseService;
     }
     @GetMapping("/scadenze/list")
     public String listScadenze(
+            @RequestParam(required = false) Integer anno,
+            @RequestParam(required = false) String denominazione,
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
             @RequestParam(defaultValue = "10") int size, // Elementi per pagina
             @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
@@ -65,7 +72,15 @@ public class ScadenzaController {
 
         String loggedUsername = principal.getName();
         Register user = userService.loadRegisterByUsername(loggedUsername);
-        Page<Scadenza> scadenze = scadenzaService.findScadenze(page, size, beneficiario, sortBy, sortDirection);
+        List<Integer> anni = analiticheSpeseService.getAnniDisponibili();
+        int annoSelezionato = (anno == null ? Year.now().getValue() : anno);
+        Page<Scadenza> scadenze = analiticheSpeseService.getScadenzePageable(page, size, beneficiario, sortBy, sortDirection,annoSelezionato);
+        // per combo in pagina grafico
+        model.addAttribute("anni", analiticheSpeseService.getAnniDisponibili());
+        model.addAttribute("annoSelezionato", annoSelezionato);
+        List<CategoriaTotaleDTO> data = analiticheSpeseService.getTotaliPerCategoriaAnno(annoSelezionato);
+        model.addAttribute("labels", data.stream().map(CategoriaTotaleDTO::categoria).toList());
+        model.addAttribute("values", data.stream().map(CategoriaTotaleDTO::totale).toList());
         model.addAttribute("scadenze", scadenze.getContent()
                 .stream()
                 .filter(scadenza -> scadenza.getBeneficiario().getUser().getId().equals(user.getId()))
@@ -77,7 +92,8 @@ public class ScadenzaController {
         if (scadenze.getTotalElements() > 0) {
             scadenze.getContent().get(0).setGiorniRitardo((int) scadenze.getContent().get(0).differanzaGiorni());
         }
-
+        model.addAttribute("anno", annoSelezionato);
+        model.addAttribute("annoSelezionato", annoSelezionato);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", scadenze.getTotalPages());
         model.addAttribute("titleFilter", beneficiario);
@@ -86,8 +102,7 @@ public class ScadenzaController {
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
         model.addAttribute("message1", message1);
-        model.addAttribute("filter", beneficiario);
-
+        model.addAttribute("filter", denominazione);
 
         return "scadenze/list";
     }
