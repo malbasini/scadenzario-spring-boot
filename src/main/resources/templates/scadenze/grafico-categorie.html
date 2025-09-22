@@ -16,6 +16,17 @@
     </style>
 </head>
 <body>
+<br>
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="alert alert-success" role="alert">
+            <h3 style="text-align: center"><b>GRAFICO SPESE PER BENEFICIARIO</b></h3>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>
+<br>
 <div class="wrap">
     <h1 th:text="|Spese per beneficiario ${(dal != null or al != null) ?
                 ' (' + #temporals.format(dal,'dd/MM/yyyy') + ' → ' +
@@ -32,7 +43,7 @@
                     al: <input type="date" name="al" class="form-control form-control-sm" th:value="${al}"/>
                 </div>
                 <div class="input-group-text">
-                    <select name="anno" onchange="this.form.submit()" class="form-select form-select-sm" aria-label="Small select example">
+                    anno:&nbsp;<select name="anno" onchange="this.form.submit()" class="form-select form-select-sm" aria-label="Small select example">
                         <option th:each="y : ${anni}"
                                 th:value="${y}"
                                 th:selected="${y} == ${annoSelezionato}"

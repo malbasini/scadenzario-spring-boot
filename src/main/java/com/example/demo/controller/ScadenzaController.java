@@ -61,7 +61,7 @@ public class ScadenzaController {
             @RequestParam(required = false) Integer anno,
             @RequestParam(required = false) String denominazione,
             @RequestParam(defaultValue = "0") int page, // Pagina corrente
-            @RequestParam(defaultValue = "10") int size, // Elementi per pagina
+            @RequestParam(defaultValue = "20") int size, // Elementi per pagina
             @RequestParam(defaultValue = "") String beneficiario, // Filtro per beneficiario
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
@@ -76,9 +76,9 @@ public class ScadenzaController {
         int annoSelezionato = (anno == null ? Year.now().getValue() : anno);
         Page<Scadenza> scadenze = analiticheSpeseService.getScadenzePageable(page, size, beneficiario, sortBy, sortDirection,annoSelezionato);
         // per combo in pagina grafico
-        model.addAttribute("anni", analiticheSpeseService.getAnniDisponibili());
-        model.addAttribute("annoSelezionato", annoSelezionato);
         List<CategoriaTotaleDTO> data = analiticheSpeseService.getTotaliPerCategoriaAnno(annoSelezionato);
+        model.addAttribute("anni", anni);
+        model.addAttribute("annoSelezionato", annoSelezionato);
         model.addAttribute("labels", data.stream().map(CategoriaTotaleDTO::categoria).toList());
         model.addAttribute("values", data.stream().map(CategoriaTotaleDTO::totale).toList());
         model.addAttribute("scadenze", scadenze.getContent()

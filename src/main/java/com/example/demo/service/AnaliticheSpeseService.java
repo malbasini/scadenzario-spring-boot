@@ -102,6 +102,7 @@ public class AnaliticheSpeseService {
                 return scadenzaRepository.findAllByYearAndData(target, data ,pageable);
             } catch (DateTimeParseException e) {
                 //SE LA DATA NON è VALIDA RICERCO PER BENEFICIARIO
+                beneficiario = "%"+beneficiario+"%";
                 return scadenzaRepository.findAllByYearAndBeneficiario(target, beneficiario ,pageable);
             }
         }

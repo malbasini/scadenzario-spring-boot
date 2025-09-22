@@ -12,7 +12,6 @@ public interface ScadenzaService {
     Scadenza findById(Integer id);
     void deleteById(Integer id);
     Scadenza save(Scadenza scadenza);
-    Page<Scadenza> findScadenze(int page, int size, String beneficiario, String sortBy, String sortDirection);
     Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user);
     List<Beneficiario> findBeneficiariByIdUser(Integer id);
 }

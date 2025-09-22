@@ -46,29 +46,6 @@ public class ScadenzaServiceImpl implements ScadenzaService {
         return scadenzeRepository.save(scadenza);
     }
 
-    public Page<Scadenza> findScadenze(int page, int size, String beneficiario, String sortBy, String sortDirection) {
-        Sort sort = Sort.by(sortBy);
-        sort = sortDirection.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        // Filtro per beneficiario e data scadenza
-        if (beneficiario != null && !beneficiario.isEmpty()) {
-            //PARSING DELLA DATA SE L'UTENTE RICERCA PER DATA
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            LocalDate data = null;
-            // Controllare se l'utente ha fornito una data valida
-            try {
-                data = LocalDate.parse(beneficiario, formatter);
-                return scadenzeRepository.findByDataScadenza(data, pageable);
-            } catch (DateTimeParseException e) {
-                //SE LA DATA NON è VALIDA RICERCO PER BENEFICIARIO
-                Page<Scadenza> scadenze = scadenzeRepository.findByDenominazioneContainingIgnoreCase(beneficiario, pageable);
-                return scadenze;
-            }
-        }
-        else
-            return scadenzeRepository.findAll(pageable);
-    }
-
     public Beneficiario findByBeneficiarioAndIdUser(String beneficiario, Register user){
         Beneficiario b = scadenzeRepository.findByBeneficiarioAndIdUser(beneficiario,user.getId());
         return b;
@@ -78,8 +55,4 @@ public class ScadenzaServiceImpl implements ScadenzaService {
         return scadenzeRepository.findBeneficiariByIdUser(id);
     }
 
-    public Beneficiario findByIdScadenza(Integer id){
-        Scadenza scadenza = scadenzeRepository.findById(id).orElseThrow(() -> new RuntimeException("Scadenza not found with ID: " + id));
-        return scadenza.getBeneficiario();
-    }
 }
