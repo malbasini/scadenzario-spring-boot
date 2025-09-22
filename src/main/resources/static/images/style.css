@@ -20,7 +20,7 @@ body>footer {
     background-image: url('../images/hero.jpg');
     background-repeat: no-repeat;
     background-size: cover;
-    height: 60%;
+    height: 50%;
 }
 .jumbotron h1 {
     font-size: 4.0rem;
