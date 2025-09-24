@@ -47,7 +47,6 @@
         <form method="get"
               th:action="@{/scadenze/grafico-categorie}"
               class="w-100">
-            <input type="hidden" name="filter" th:value="${filter}"/>
             <div class="input-group">
                 <div class="input-group-text">
                     dal: <input type="date" name="dal" class="form-control form-control-sm" th:value="${dal}"/>
@@ -72,6 +71,9 @@
                     <option value="polarArea">Polar area</option>
                     <option value="radar">Radar</option>
                 </select>
+                </div>
+                <div class="input-group-text">
+                    filtro: <input type="text" name="filter" class="form-control form-control-sm" th:value="${filter}" readonly="readonly"/>
                 </div>
             </div>
         </form>
