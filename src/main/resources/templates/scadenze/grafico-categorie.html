@@ -47,6 +47,7 @@
         <form method="get"
               th:action="@{/scadenze/grafico-categorie}"
               class="w-100">
+            <input type="hidden" name="filter" th:value="${filter}"/>
             <div class="input-group">
                 <div class="input-group-text">
                     dal: <input type="date" name="dal" class="form-control form-control-sm" th:value="${dal}"/>
