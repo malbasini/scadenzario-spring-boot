@@ -1,0 +1,96 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:inline="text">
+<div th:insert="~{base :: headerFragment}"></div>
+<br>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Dettaglio</title>
+  <div class="row">
+    <div class="col-md-12">
+      <th:block th:if="${!#strings.isEmpty(message)}">
+        <div class="alert alert-danger" role="alert">
+          <th:block th:text="${message}"></th:block>
+        </div>
+      </th:block>
+    </div>
+  </div>
+  <div class="row">
+      <div class="col-md-12">
+        <th:block th:if="${!#strings.isEmpty(message1)}">
+          <div class="alert alert-info" role="alert">
+            <th:block th:text="${message1}"></th:block>
+          </div>
+        </th:block>
+      </div>
+  </div>
+</head>
+<body>
+<div class="row">
+   <div class="col-md-3"></div>
+     <div class="col-md-9">
+        <h1>Dettaglio Beneficario</h1>
+     </div>
+</div>
+<br>
+<section class="course-info">
+    <div class="row">
+      <div class="col-md-3 mb-3 mb-sm-0">
+
+      </div>
+      <div class="col-md-9">
+        <a class="btn btn-outline-primary btn-sm" th:href="|@{/{id}/edit(id=${beneficiario.getId()})}|"><i class="fas fa-pencil-alt"></i> Modifica</a>
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/beneficiari/list}"><i class="fas fa-th-list"></i> Torna alla Lista</a>
+      </div>
+    </div>
+    <br>
+    <br>
+    <div class="row">
+      <div class="col-md-6 mb-3 mb-sm-0">
+        <div class="card text-bg-warning mb-3 col-6 offset-md-6" style="width: 100%;">
+          <div class="card-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16">
+              <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+            </svg>
+            Dettaglio
+          </div>
+          <div class="card-body">
+            <div class="input-group">
+              <label>Denominazione</label>:&nbsp
+              <b> <th:block th:text="${beneficiario.getBeneficiario()}"></th:block></b>
+            </div>
+            <div class="input-group">
+              <label>Descrizione</label>:&nbsp
+              <p><th:block th:utext="${beneficiario.getDescrizione()}"></th:block></p>
+            </div>
+            <div class="input-group">
+              <label>Email</label>:&nbsp
+              <b><th:block th:if="${!#strings.isEmpty(beneficiario.getEmail())}"
+                           th:text="${T(org.jsoup.Jsoup).parse(beneficiario.getEmail()).text()}" >
+              </th:block>
+              </b>
+            </div>
+            <div class="input-group">
+              <label>Telefono</label>:&nbsp
+              <b>
+                <th:block th:if="${!#strings.isEmpty(beneficiario.getTelefono())}"
+                           th:text="${T(org.jsoup.Jsoup).parse(beneficiario.getTelefono()).text()}" >
+              </th:block>
+              </b>
+            </div>
+            <div class="input-group">
+              <label>Sito web</label>:&nbsp
+              <a th:href="${beneficiario.getSitoWeb()}" th:text="${beneficiario.getSitoWeb()}" class="card-link"></a>
+            </div>
+          </div>
+          <div class="card-footer">
+            Footer
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
+<div th:insert="~{footer :: footerFragment}"></div>

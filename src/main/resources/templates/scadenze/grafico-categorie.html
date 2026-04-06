@@ -1,0 +1,129 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Grafico spese per beneficiario</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" th:href="@{/images/style.css}" />
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+        .wrap { max-width: 12000px; margin: 0 auto; }
+        .toolbar { margin-bottom: 16px; display:flex; gap:8px; align-items:center;}
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 420px;      /* altezza fissa: regola a piacere */
+            overflow: hidden;
+        }
+        #chart {
+            display: block;     /* evita spazio baseline */
+            width: 100% !important;
+            height: 100% !important;  /* riempi il contenitore */
+        }
+    </style>
+</head>
+<body>
+<br>
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="alert alert-success" role="alert">
+            <h3 style="text-align: center"><b>GRAFICO SPESE PER BENEFICIARIO</b></h3>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>
+<br>
+<div class="wrap">
+    <h1 th:text="|Spese per beneficiario ${(dal != null or al != null) ?
+                ' (' + #temporals.format(dal,'dd/MM/yyyy') + ' → ' +
+                #temporals.format(al,'dd/MM/yyyy') + ')' : ''} anno ${annoSelezionato}|">
+    </h1>
+    <div class="toolbar">
+        <form method="get"
+              th:action="@{/scadenze/grafico-categorie}"
+              class="w-100">
+            <div class="input-group">
+                <div class="input-group-text">
+                    dal: <input type="date" name="dal" class="form-control form-control-sm" th:value="${dal}"/>
+                </div>
+                <div class="input-group-text">
+                    al: <input type="date" name="al" class="form-control form-control-sm" th:value="${al}"/>
+                </div>
+                <div class="input-group-text">
+                    <button type="submit" class="btn btn-outline-primary form-control form-control-sm">Applica</button>
+                </div>
+                <div class="input-group-text">
+                    anno:&nbsp;<select name="anno" onchange="this.form.submit()" class="form-select form-select-sm">
+                    <option th:each="y : ${anni}" th:value="${y}" th:selected="${y} == ${annoSelezionato}" th:text="${y}"></option>
+                </select>
+                </div>
+                <div class="input-group-text">
+                    tipo grafico:&nbsp;<select id="chartType" name="chart" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                    <option value="pie">Pie</option>
+                    <option value="doughnut">Doughnut</option>
+                    <option value="polarArea">Polar area</option>
+                    <option value="radar">Radar</option>
+                </select>
+                </div>
+                <div class="input-group-text">
+                    filtro: <input type="text" name="filter" class="form-control form-control-sm" th:value="${filter}" readonly="readonly"/>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="chart-wrap">
+    <canvas id="chart"></canvas>
+</div>
+<script th:inline="javascript">
+    const chartFromUrl = /*[[${param.chart}]]*/ null;
+    if (chartFromUrl) document.getElementById('chartType').value = chartFromUrl;
+</script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const labels = /*[[${labels}]]*/ [];
+    const values = /*[[${values}]]*/ [];
+    const typeFromUrl = /*[[${param.chart}]]*/ null;  // opzionale: ?chart=pie
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof Chart === 'undefined') { console.error('Chart.js non caricato'); return; }
+
+        const el = document.getElementById('chart');
+        if (!el) { console.error('Canvas #chart non trovato'); return; }
+
+        // distruggi istanze precedenti se ricarichi partial
+        if (window.__speseChart && window.__speseChart.destroy) {
+            try { window.__speseChart.destroy(); } catch {}
+            window.__speseChart = null;
+        }
+
+        const initialType = typeFromUrl || 'bar';
+
+        window.__speseChart = new Chart(el.getContext('2d'), {
+            type: initialType,
+            data: { labels, datasets: [{ label: 'Totale (€)', data: values }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,   // usa l’altezza di .chart-wrap
+                resizeDelay: 150,             // debounce resize
+                devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2), // evita canvas enormi su retina
+                scales: ['pie','doughnut','polarArea','radar'].includes(initialType) ? {} : { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
+            }
+        });
+    });
+    /*]]>*/
+</script>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+<div th:insert="~{footer :: footerFragment}"></div>
+</html>
