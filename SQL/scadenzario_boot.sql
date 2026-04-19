@@ -68,7 +68,7 @@ CREATE TABLE `persistent_logins` (
 
 LOCK TABLES `persistent_logins` WRITE;
 /*!40000 ALTER TABLE `persistent_logins` DISABLE KEYS */;
-INSERT INTO `persistent_logins` VALUES ('malbasini','lgO98+s9aplhsaha/RLnIA==','5OrmFDt8I6q3BcMEsqRcWA==','2026-04-06 14:58:08');
+INSERT INTO `persistent_logins` VALUES ('malbasini','lgO98+s9aplhsaha/RLnIA==','bsi5Yl69Y4ABy9rUpaECjA==','2026-04-07 01:37:12');
 /*!40000 ALTER TABLE `persistent_logins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -197,7 +197,7 @@ CREATE TABLE `scadenze` (
   `importo` decimal(38,2) NOT NULL,
   `sollecito` bit(1) DEFAULT b'0',
   `giorni_ritardo` int DEFAULT NULL,
-  `data_pagamento` date DEFAULT (curdate()),
+  `data_pagamento` date,
   `status` varchar(255) DEFAULT NULL,
   `beneficiario_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -259,4 +259,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-06 17:09:25
+-- Dump completed on 2026-04-19  5:05:57

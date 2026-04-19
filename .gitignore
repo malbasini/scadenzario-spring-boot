@@ -1,0 +1,6 @@
+target
+keys
+.idea
+logs
+Scadenzario.iml
+./src/main/resources/application.properties
